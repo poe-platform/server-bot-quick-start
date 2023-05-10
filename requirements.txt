@@ -1,1 +1,1 @@
-fastapi-poe==0.10.0
+fastapi-poe==0.0.11
