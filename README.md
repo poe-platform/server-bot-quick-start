@@ -9,7 +9,7 @@ Poe API bots, see [poe-protocol](https://github.com/poe-platform/poe-protocol).
 
 We will go over three ways of deploying your bot.
 
-- Using `Gitpod`, a cloud based IDE (this method is the fastest).
+- Using `Gitpod`, a cloud-based IDE (this method is the fastest).
 - Using `ngrok` (allows you to make public a bot running on your local computer).
 - Using a cloud provider like Heroku (most scalable but the most amount of work).
 
