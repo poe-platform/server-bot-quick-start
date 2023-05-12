@@ -82,3 +82,7 @@ bot should be ready for use in all Poe clients!
   or build off of them.
 - Refer to [poe-protocol](https://github.com/poe-platform/poe-protocol) to understand
   the full capabilities offered by Poe API bots.
+
+## Questions?
+
+Join us on [Discord](https://discord.gg/TKxT6kBpgm) with any questions.
