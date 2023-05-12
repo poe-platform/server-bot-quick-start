@@ -21,8 +21,8 @@ to run a publicly accessible Web service as part of your project. To get started
 - Go to [gitpod.io/workspaces](https://gitpod.io/workspaces) and login or create an
   account.
 - Click "New Workspace".
-- Enter the address of this repo (i.e., https://github.com/poe-platform/api-bot-tutorial)
-  into the "Context URL" field.
+- Enter the address of this repo (i.e.,
+  https://github.com/poe-platform/api-bot-tutorial) into the "Context URL" field.
 - Hit continue. Gitpod will now take a few minutes to spin up the new workspace.
 - Note the URL in the address bar above "FastAPI Poe bot server" (see screenshot).
   - This is your bot server URL
@@ -77,7 +77,7 @@ bot should be ready for use in all Poe clients!
 ## Where to go from here
 
 - The starter code by default uses the EchoBot which is a simple bot with no AI
-  capabilities. You can comment/uncomment any of the other example bots to
-  try them out or build off of them.
+  capabilities. You can comment/uncomment any of the other example bots to try them out
+  or build off of them.
 - Refer to [poe-protocol](https://github.com/poe-platform/poe-protocol) to understand
   the full capabilities offered by Poe API bots.
