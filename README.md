@@ -82,7 +82,9 @@ bot should be ready for use in all Poe clients!
   capabilities. You can comment/uncomment any of the other example bots to try them out
   or build off of them.
 - Refer to [poe-protocol](https://github.com/poe-platform/poe-protocol) to understand
-  the full capabilities offered by Poe API bots.
+  the full capabilities offered by Poe API bots and see some additional tools and samples, including:
+  - The [specification](https://github.com/poe-platform/poe-protocol/blob/main/spec.md) that details precisely how API bots work
+  - The [fastapi-poe](https://pypi.org/project/fastapi-poe/) library, which you can use as a base for creating Poe bots
 
 ## Questions?
 
