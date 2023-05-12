@@ -6,6 +6,8 @@
 from fastapi_poe import make_app
 
 from echobot import EchoBot
+from catbot import CatBot
+from langcatbot import LangCatBot
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
