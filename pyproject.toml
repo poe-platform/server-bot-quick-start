@@ -1,0 +1,11 @@
+[tool.black]
+target-version = ['py37']
+skip-magic-trailing-comma = true
+
+[tool.pycln]
+all = true
+
+[tool.isort]
+profile = "black"
+combine_as_imports = true
+skip_gitignore = true
