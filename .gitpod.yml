@@ -1,0 +1,10 @@
+tasks:
+  - init: pip install -r requirements.txt
+    command: |
+      gp open main.py
+      uvicorn main:app --reload
+
+ports:
+  - port: 8000
+    visibility: public
+    onOpen: open-preview
