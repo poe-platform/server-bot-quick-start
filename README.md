@@ -23,7 +23,8 @@ to run a publicly accessible Web service as part of your project. To get started
 - Click "New Workspace".
 - Enter the address of this repo (i.e.,
   https://github.com/poe-platform/api-bot-tutorial) into the "Context URL" field.
-- Hit continue. Gitpod will now take a few minutes to spin up the new workspace.
+- Hit continue. Gitpod will now take a few minutes to spin up the new workspace and
+  start your server.
 - Note the URL in the address bar above "FastAPI Poe bot server" (see screenshot).
   - ![Screenshot of a Gitpod page with the URL for the server circled.](./images/gitpod.png)
   - This is your bot server URL

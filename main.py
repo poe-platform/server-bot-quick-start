@@ -5,22 +5,22 @@
 
 from fastapi_poe import make_app
 
-# Echo bot is a very simple bot that just echoes back the user's last message.
+from catbot import CatBot
 from echobot import EchoBot
+from langcatbot import LangCatBot
 
+# Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
 
 # A sample bot that showcases the capabilities the protocol provides. Please see the
 # following link for the full set of available message commands:
 # https://github.com/poe-platform/poe-protocol/blob/main/docs/catbot.md
-# from catbot import CatBot
 # bot = CatBot()
 
 # A custom chatbot built on top of ChatGPT and LangChain.
 # Add your OpenAI key here, e.g. sk-1234
 # You can obtain a key at https://platform.openai.com/account/api-keys
 # OPEN_AI_API_KEY = ""
-# from langcatbot import LangCatBot
 # bot = LangCatBot(OPEN_AI_API_KEY)
 
 # Optionally add your Poe API key here. You can go to https://poe.com/create_bot?api=1 to generate

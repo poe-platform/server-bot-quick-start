@@ -4,6 +4,7 @@ skip-magic-trailing-comma = true
 
 [tool.pycln]
 all = true
+exclude = "main\\.py"
 
 [tool.isort]
 profile = "black"
