@@ -1,3 +1,11 @@
+"""
+
+Sample bot that uses LangChain to interact with ChatGPT.
+
+You can use this as a sample if you want to build your own bot on top of an existing LLM.
+
+"""
+
 import asyncio
 from dataclasses import dataclass
 from typing import AsyncIterable

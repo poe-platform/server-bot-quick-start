@@ -2,6 +2,9 @@
 
 Demo bot: catbot.
 
+This bot uses all options provided by the Poe protocol. You can use it to get examples
+of all the protocol has to offer.
+
 """
 from __future__ import annotations
 

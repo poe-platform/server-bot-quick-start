@@ -10,7 +10,7 @@ from echobot import EchoBot
 
 bot = EchoBot()
 
-# A Sample bot that showcases the capabilities the protocol provides. Please see the
+# A sample bot that showcases the capabilities the protocol provides. Please see the
 # following link for the full set of available message commands:
 # https://github.com/poe-platform/poe-protocol/blob/main/docs/catbot.md
 # from catbot import CatBot
@@ -24,8 +24,8 @@ bot = EchoBot()
 # bot = LangCatBot(OPEN_AI_API_KEY)
 
 # Optionally add your Poe API key here. You can go to https://poe.com/create_bot?api=1 to generate
-# one. We strongly recommend adding this key for a production bot to prevent abuse by bad actors,
-# however the starter example disables the key check for convenience.
+# one. We strongly recommend adding this key for a production bot to prevent abuse,
+# but the starter example disables the key check for convenience.
 # POE_API_KEY = ""
 # app = make_app(bot, api_key=POE_API_KEY)
 
