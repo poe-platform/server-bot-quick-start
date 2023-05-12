@@ -9,8 +9,6 @@ import asyncio
 import json
 from typing import AsyncIterable
 
-from sse_starlette.sse import ServerSentEvent
-
 from fastapi_poe import PoeBot, run
 from fastapi_poe.types import (
     ContentType,
@@ -19,6 +17,7 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
+from sse_starlette.sse import ServerSentEvent
 
 SETTINGS = SettingsResponse(
     context_clear_window_secs=60 * 60, allow_user_context_clear=True

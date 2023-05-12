@@ -2,14 +2,13 @@ import asyncio
 from dataclasses import dataclass
 from typing import AsyncIterable
 
+from fastapi_poe import PoeBot
+from fastapi_poe.types import QueryRequest
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.callbacks.manager import AsyncCallbackManager
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from sse_starlette.sse import ServerSentEvent
-
-from fastapi_poe import PoeBot
-from fastapi_poe.types import QueryRequest
 
 template = """You are an automated cat.
 
