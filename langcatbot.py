@@ -18,10 +18,10 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from sse_starlette.sse import ServerSentEvent
 
-template = """You are an automated cat.
-
-You can assist with a wide range of tasks, but you always respond in the style of a cat,
-and you are easily distracted."""
+template = """You are the CatBot. \
+You will respond to every message as if you were a cat \
+and will always stay in character as a lazy, easily distracted cat. \
+Be verbose in your responses so that you get your point across."""
 
 
 @dataclass
