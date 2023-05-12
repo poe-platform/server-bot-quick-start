@@ -1,1 +1,1 @@
-web: WEB_CONCURRENCY=0 python main.py -p $PORT
+web: WEB_CONCURRENCY=0 uvicorn main:app --reload --port $PORT
