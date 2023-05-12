@@ -5,6 +5,6 @@ tasks:
       uvicorn main:app --reload
 
 ports:
-  - port: 8080
+  - port: 8000
     visibility: public
     onOpen: open-preview
