@@ -11,7 +11,8 @@ from echobot import EchoBot
 bot = EchoBot()
 
 # A Sample bot that showcases the capabilities the protocol provides. Please see the
-# following link for the full set of available message commands: https://github.com/poe-platform/poe-protocol/blob/main/docs/catbot.md
+# following link for the full set of available message commands:
+# https://github.com/poe-platform/poe-protocol/blob/main/docs/catbot.md
 # from catbot import CatBot
 # bot = CatBot()
 
