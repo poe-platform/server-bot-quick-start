@@ -14,7 +14,7 @@ bot = EchoBot()
 
 # A sample bot that showcases the capabilities the protocol provides. Please see the
 # following link for the full set of available message commands:
-# https://github.com/poe-platform/poe-protocol/blob/main/docs/catbot.md
+# https://github.com/poe-platform/api-bot-tutorial/blob/main/catbot/catbot.md
 # bot = CatBot()
 
 # A custom chatbot built on top of ChatGPT and LangChain.
