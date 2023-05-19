@@ -2,7 +2,7 @@
 
 Welcome to the Poe API Bot tutorial. This repository includes starter code and will help
 you quickly get a bot running. As part of this tutorial, we will go over how to deploy
-this starter code and how to integrate your bot server with poe. For more information on
+this starter code and how to integrate your bot server with Poe. For more information on
 Poe API bots, see [poe-protocol](https://github.com/poe-platform/poe-protocol).
 
 ## Deploying your bot
