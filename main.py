@@ -8,6 +8,9 @@ from fastapi_poe import make_app
 from catbot import CatBot
 from echobot import EchoBot
 from langcatbot import LangCatBot
+from all_caps import AllCapsBot
+from battle import BattleBot
+from concurrent_battle import ConcurrentBattleBot
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
@@ -22,6 +25,15 @@ bot = EchoBot()
 # You can obtain a key at https://platform.openai.com/account/api-keys
 # OPEN_AI_API_KEY = ""
 # bot = LangCatBot(OPEN_AI_API_KEY)
+
+# A bot that wraps Poe's Sage bot, but makes all messages ALL CAPS.
+# bot = AllCapsBot()
+
+# A bot that calls on both Sage and Claude-Instant and shows the results.
+# bot = BattleBot()
+
+# Like BattleBot, but streams both responses at once.
+# bot = ConcurrentBattleBot()
 
 # Optionally add your Poe API key here. You can go to https://poe.com/create_bot?api=1 to generate
 # one. We strongly recommend adding this key for a production bot to prevent abuse,
