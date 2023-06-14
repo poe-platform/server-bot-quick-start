@@ -32,7 +32,7 @@ async def advance_stream(
 async def combine_streams(
     streams: Sequence[tuple[str, AsyncIterator[BotMessage]]]
 ) -> AsyncIterator[tuple[str, BotMessage | Exception]]:
-    active_streams = {label: gen for label, gen in streams}
+    active_streams = dict(streams)
     while active_streams:
         for coro in asyncio.as_completed(
             [advance_stream(label, gen) for label, gen in active_streams.items()]
