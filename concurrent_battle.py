@@ -15,7 +15,7 @@ from fastapi_poe.client import BotMessage, MetaMessage, stream_request
 from fastapi_poe.types import ProtocolMessage, QueryRequest
 from sse_starlette.sse import ServerSentEvent
 
-COMPARE_REGEX = r" ([A-Za-z_\-\d]+) vs\.? ([A-Za-z_\-\d]+)\s*$"
+COMPARE_REGEX = r"\s([A-Za-z_\-\d]+)\s+vs\.?\s+([A-Za-z_\-\d]+)\s*$"
 
 
 async def advance_stream(
