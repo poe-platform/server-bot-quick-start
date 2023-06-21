@@ -40,5 +40,5 @@ bot = EchoBot()
 # but the starter example disables the key check for convenience.
 # POE_API_KEY = ""
 # app = make_app(bot, api_key=POE_API_KEY)
-
+out=app.get_response("Hello")
 app = make_app(bot, allow_without_key=True)
