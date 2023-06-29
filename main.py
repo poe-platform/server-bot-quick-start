@@ -5,12 +5,11 @@
 
 from fastapi_poe import make_app
 
-from all_caps import AllCapsBot
-from battle import BattleBot
-from catbot import CatBot
-from concurrent_battle import ConcurrentBattleBot
 from echobot import EchoBot
-from langcatbot import LangCatBot
+from catbot import CatBot
+from chatgpt_all_caps import ChatGPTAllCapsBotAllCapsBot
+from battle import BattleBot
+from concurrent_battle import ConcurrentBattleBot
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
@@ -21,7 +20,7 @@ bot = EchoBot()
 # bot = CatBot()
 
 # A bot that wraps Poe's Sage bot, but makes all messages ALL CAPS.
-# bot = AllCapsBot()
+# bot = ChatGPTAllCapsBot()
 
 # A bot that calls on both Sage and Claude-Instant and shows the results.
 # bot = BattleBot()

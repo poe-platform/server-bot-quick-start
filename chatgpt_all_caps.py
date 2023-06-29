@@ -1,6 +1,6 @@
 """
 
-Sample bot that wraps Sage and sends all messages in all-caps.
+Sample bot that wraps chatGPT but makes responses use all-caps.
 
 """
 from __future__ import annotations
@@ -13,9 +13,9 @@ from fastapi_poe.types import QueryRequest
 from sse_starlette.sse import ServerSentEvent
 
 
-class AllCapsBot(PoeBot):
+class ChatGPTAllCapsBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
-        async for msg in stream_request(query, "sage", query.api_key):
+        async for msg in stream_request(query, "chatGPT", query.api_key):
             if isinstance(msg, MetaMessage):
                 yield self.meta_event(
                     content_type=msg.content_type,
@@ -29,7 +29,3 @@ class AllCapsBot(PoeBot):
                 yield self.replace_response_event(msg.text.upper())
             else:
                 yield self.text_event(msg.text.upper())
-
-
-if __name__ == "__main__":
-    run(AllCapsBot())
