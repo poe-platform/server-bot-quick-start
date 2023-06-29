@@ -8,9 +8,8 @@ from modal import asgi_app, Stub, Image
 
 from echobot import EchoBot
 from catbot import CatBot
-from chatgpt_all_caps import ChatGPTAllCapsBot
-from battle import BattleBot
-from concurrent_battle import ConcurrentBattleBot
+from chatgpt_allcapsbot import ChatGPTAllCapsBot
+from battlebot import BattleBot
 
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
@@ -24,11 +23,10 @@ bot = EchoBot()
 # A bot that wraps Poe's Sage bot, but makes all messages ALL CAPS.
 # bot = ChatGPTAllCapsBot()
 
-# A bot that calls on both Sage and Claude-Instant and shows the results.
+# A bot that calls two different bots (by default Sage and Claude-Instant) and 
+# shows the results. Can customize what bots to call by including in message a string
+# of the form (botname1 vs botname2)
 # bot = BattleBot()
-
-# Like BattleBot, but streams both responses at once.
-# bot = ConcurrentBattleBot()
 
 # Optionally add your Poe API key here. You can go to https://poe.com/create_bot?api=1 to generate
 # one. We strongly recommend adding this key for a production bot to prevent abuse,
@@ -36,6 +34,7 @@ bot = EchoBot()
 # POE_API_KEY = ""
 # app = make_app(bot, api_key=POE_API_KEY)
 
+# specific to hosting with modal.com
 image = (
     Image
     .debian_slim()

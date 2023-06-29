@@ -85,7 +85,7 @@ def preprocess_query(query: QueryRequest, bot: str) -> QueryRequest:
     return new_query
 
 
-class ConcurrentBattleBot(PoeBot):
+class BattleBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
         bots = get_bots_to_compare(query.query)
         streams = [
