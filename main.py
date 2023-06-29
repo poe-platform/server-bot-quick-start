@@ -25,9 +25,6 @@ bot = EchoBot()
 # OPEN_AI_API_KEY = ""
 # bot = LangCatBot(OPEN_AI_API_KEY)
 
-# A bot that wraps Poe's Sage bot, but makes all messages ALL CAPS.
-# bot = AllCapsBot()
-
 # A bot that calls on both Sage and Claude-Instant and shows the results.
 # bot = BattleBot()
 
