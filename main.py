@@ -8,7 +8,7 @@ from modal import asgi_app, Stub, Image
 
 from echobot import EchoBot
 from catbot import CatBot
-from chatgpt_all_caps import ChatGPTAllCapsBotAllCapsBot
+from chatgpt_all_caps import ChatGPTAllCapsBot
 from battle import BattleBot
 from concurrent_battle import ConcurrentBattleBot
 
