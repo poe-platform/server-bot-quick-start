@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import AsyncIterable
 
-from fastapi_poe import PoeBot, run
+from fastapi_poe import PoeBot
 from fastapi_poe.client import MetaMessage, stream_request
 from fastapi_poe.types import QueryRequest
 from sse_starlette.sse import ServerSentEvent

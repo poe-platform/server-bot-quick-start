@@ -10,7 +10,7 @@ import re
 from collections import defaultdict
 from typing import AsyncIterable, AsyncIterator, Sequence
 
-from fastapi_poe import PoeBot, run
+from fastapi_poe import PoeBot
 from fastapi_poe.client import BotMessage, MetaMessage, stream_request
 from fastapi_poe.types import ProtocolMessage, QueryRequest
 from sse_starlette.sse import ServerSentEvent

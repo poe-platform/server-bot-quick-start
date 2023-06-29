@@ -4,13 +4,12 @@
 # comment/uncomment any of the following code to try out other example bots.
 
 from fastapi_poe import make_app
-from modal import asgi_app, Stub, Image
+from modal import Image, Stub, asgi_app
 
-from echobot import EchoBot
+from battlebot import BattleBot
 from catbot import CatBot
 from chatgpt_allcapsbot import ChatGPTAllCapsBot
-from battlebot import BattleBot
-
+from echobot import EchoBot
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
@@ -23,7 +22,7 @@ bot = EchoBot()
 # A bot that wraps Poe's Sage bot, but makes all messages ALL CAPS.
 # bot = ChatGPTAllCapsBot()
 
-# A bot that calls two different bots (by default Sage and Claude-Instant) and 
+# A bot that calls two different bots (by default Sage and Claude-Instant) and
 # shows the results. Can customize what bots to call by including in message a string
 # of the form (botname1 vs botname2)
 # bot = BattleBot()
@@ -35,12 +34,9 @@ bot = EchoBot()
 # app = make_app(bot, api_key=POE_API_KEY)
 
 # specific to hosting with modal.com
-image = (
-    Image
-    .debian_slim()
-    .pip_install_from_requirements("requirements.txt")
-)
+image = Image.debian_slim().pip_install_from_requirements("requirements.txt")
 stub = Stub("poe-bot-quickstart")
+
 
 @stub.function(image=image)
 @asgi_app()
