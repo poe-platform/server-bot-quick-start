@@ -12,7 +12,7 @@ import asyncio
 import json
 from typing import AsyncIterable
 
-from fastapi_poe import PoeBot, run
+from fastapi_poe import PoeBot
 from fastapi_poe.types import (
     ContentType,
     QueryRequest,
