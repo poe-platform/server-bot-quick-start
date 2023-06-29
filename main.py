@@ -20,12 +20,6 @@ bot = EchoBot()
 # https://github.com/poe-platform/api-bot-tutorial/blob/main/catbot/catbot.md
 # bot = CatBot()
 
-# A custom chatbot built on top of ChatGPT and LangChain.
-# Add your OpenAI key here, e.g. sk-1234
-# You can obtain a key at https://platform.openai.com/account/api-keys
-# OPEN_AI_API_KEY = ""
-# bot = LangCatBot(OPEN_AI_API_KEY)
-
 # A bot that wraps Poe's Sage bot, but makes all messages ALL CAPS.
 # bot = AllCapsBot()
 
