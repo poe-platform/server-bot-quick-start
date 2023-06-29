@@ -4,12 +4,20 @@
 # comment/uncomment any of the following code to try out other example bots.
 
 from fastapi_poe import make_app
+from modal import asgi_app, Stub, Image
 
 from echobot import EchoBot
 from catbot import CatBot
 from chatgpt_all_caps import ChatGPTAllCapsBotAllCapsBot
 from battle import BattleBot
 from concurrent_battle import ConcurrentBattleBot
+
+image = (
+    Image
+    .debian_slim()
+    .pip_install_from_requirements("requirements.txt")
+)
+stub = Stub("poe-bot-quickstart")
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
@@ -34,4 +42,8 @@ bot = EchoBot()
 # POE_API_KEY = ""
 # app = make_app(bot, api_key=POE_API_KEY)
 
-app = make_app(bot, allow_without_key=True)
+@stub.function(image=image)
+@asgi_app()
+def fastapi_app():
+    app = make_app(bot, allow_without_key=True)
+    return app
