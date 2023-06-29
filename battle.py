@@ -1,6 +1,6 @@
 """
 
-Sample bot that returns results from both Sage and Claude-Instant.
+Sample bot that returns results from the Sage and Claude-Instant bot on Poe.
 
 """
 from __future__ import annotations
@@ -26,7 +26,3 @@ class BattleBot(PoeBot):
                     yield self.replace_response_event(msg.text)
                 else:
                     yield self.text_event(msg.text)
-
-
-if __name__ == "__main__":
-    run(BattleBot())

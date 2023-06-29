@@ -110,7 +110,3 @@ class ConcurrentBattleBot(PoeBot):
                 for label, chunks in label_to_responses.items()
             )
             yield self.replace_response_event(text)
-
-
-if __name__ == "__main__":
-    run(ConcurrentBattleBot())

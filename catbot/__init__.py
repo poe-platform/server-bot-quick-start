@@ -103,7 +103,3 @@ class CatBot(PoeBot):
     async def get_settings(self, settings: SettingsRequest) -> SettingsResponse:
         """Return the settings for this bot."""
         return SETTINGS
-
-
-if __name__ == "__main__":
-    run(CatBot())
