@@ -19,7 +19,8 @@ bot = EchoBot()
 # https://github.com/poe-platform/api-bot-tutorial/blob/main/catbot/catbot.md
 # bot = CatBot()
 
-# A bot that wraps Poe's Sage bot, but makes all messages ALL CAPS.
+# A bot that wraps Poe's ChatGPT bot, but makes all messages ALL CAPS.
+# Good simple example of calling on another bot using Poe's API.
 # bot = ChatGPTAllCapsBot()
 
 # A bot that calls two different bots (by default Sage and Claude-Instant) and
