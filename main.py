@@ -4,13 +4,12 @@
 # comment/uncomment any of the following code to try out other example bots.
 
 from fastapi_poe import make_app
+from modal import Image, Stub, asgi_app
 
-from all_caps import AllCapsBot
-from battle import BattleBot
+from battlebot import BattleBot
 from catbot import CatBot
-from concurrent_battle import ConcurrentBattleBot
+from chatgpt_allcapsbot import ChatGPTAllCapsBot
 from echobot import EchoBot
-from langcatbot import LangCatBot
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
@@ -20,20 +19,14 @@ bot = EchoBot()
 # https://github.com/poe-platform/api-bot-tutorial/blob/main/catbot/catbot.md
 # bot = CatBot()
 
-# A custom chatbot built on top of ChatGPT and LangChain.
-# Add your OpenAI key here, e.g. sk-1234
-# You can obtain a key at https://platform.openai.com/account/api-keys
-# OPEN_AI_API_KEY = ""
-# bot = LangCatBot(OPEN_AI_API_KEY)
+# A bot that wraps Poe's ChatGPT bot, but makes all messages ALL CAPS.
+# Good simple example of calling on another bot using Poe's API.
+# bot = ChatGPTAllCapsBot()
 
-# A bot that wraps Poe's Sage bot, but makes all messages ALL CAPS.
-# bot = AllCapsBot()
-
-# A bot that calls on both Sage and Claude-Instant and shows the results.
+# A bot that calls two different bots (by default Sage and Claude-Instant) and
+# shows the results. Can customize what bots to call by including in message a string
+# of the form (botname1 vs botname2)
 # bot = BattleBot()
-
-# Like BattleBot, but streams both responses at once.
-# bot = ConcurrentBattleBot()
 
 # Optionally add your Poe API key here. You can go to https://poe.com/create_bot?api=1 to generate
 # one. We strongly recommend adding this key for a production bot to prevent abuse,
@@ -41,4 +34,13 @@ bot = EchoBot()
 # POE_API_KEY = ""
 # app = make_app(bot, api_key=POE_API_KEY)
 
-app = make_app(bot, allow_without_key=True)
+# specific to hosting with modal.com
+image = Image.debian_slim().pip_install_from_requirements("requirements.txt")
+stub = Stub("poe-bot-quickstart")
+
+
+@stub.function(image=image)
+@asgi_app()
+def fastapi_app():
+    app = make_app(bot, allow_without_key=True)
+    return app

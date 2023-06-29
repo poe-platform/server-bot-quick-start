@@ -10,7 +10,7 @@ import re
 from collections import defaultdict
 from typing import AsyncIterable, AsyncIterator, Sequence
 
-from fastapi_poe import PoeBot, run
+from fastapi_poe import PoeBot
 from fastapi_poe.client import BotMessage, MetaMessage, stream_request
 from fastapi_poe.types import ProtocolMessage, QueryRequest
 from sse_starlette.sse import ServerSentEvent
@@ -85,7 +85,7 @@ def preprocess_query(query: QueryRequest, bot: str) -> QueryRequest:
     return new_query
 
 
-class ConcurrentBattleBot(PoeBot):
+class BattleBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
         bots = get_bots_to_compare(query.query)
         streams = [
@@ -110,7 +110,3 @@ class ConcurrentBattleBot(PoeBot):
                 for label, chunks in label_to_responses.items()
             )
             yield self.replace_response_event(text)
-
-
-if __name__ == "__main__":
-    run(ConcurrentBattleBot())

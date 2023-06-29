@@ -1,4 +1,1 @@
 fastapi-poe==0.0.14
-langchain==0.0.201
-openai==0.27.8
-uvicorn==0.22.0

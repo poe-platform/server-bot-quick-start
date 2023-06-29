@@ -12,7 +12,7 @@ import asyncio
 import json
 from typing import AsyncIterable
 
-from fastapi_poe import PoeBot, run
+from fastapi_poe import PoeBot
 from fastapi_poe.types import (
     ContentType,
     QueryRequest,
@@ -103,7 +103,3 @@ class CatBot(PoeBot):
     async def get_settings(self, settings: SettingsRequest) -> SettingsResponse:
         """Return the settings for this bot."""
         return SETTINGS
-
-
-if __name__ == "__main__":
-    run(CatBot())
