@@ -5,7 +5,6 @@
 
 from fastapi_poe import make_app
 
-from all_caps import AllCapsBot
 from battle import BattleBot
 from catbot import CatBot
 from concurrent_battle import ConcurrentBattleBot
