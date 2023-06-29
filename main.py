@@ -12,12 +12,6 @@ from chatgpt_all_caps import ChatGPTAllCapsBot
 from battle import BattleBot
 from concurrent_battle import ConcurrentBattleBot
 
-image = (
-    Image
-    .debian_slim()
-    .pip_install_from_requirements("requirements.txt")
-)
-stub = Stub("poe-bot-quickstart")
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
@@ -41,6 +35,13 @@ bot = EchoBot()
 # but the starter example disables the key check for convenience.
 # POE_API_KEY = ""
 # app = make_app(bot, api_key=POE_API_KEY)
+
+image = (
+    Image
+    .debian_slim()
+    .pip_install_from_requirements("requirements.txt")
+)
+stub = Stub("poe-bot-quickstart")
 
 @stub.function(image=image)
 @asgi_app()
