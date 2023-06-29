@@ -1,4 +1,0 @@
-language = "python3"
-onBoot = "pip install -r requirements.txt"
-run = "uvicorn main:app --reload"
-entrypoint = "main.py"
