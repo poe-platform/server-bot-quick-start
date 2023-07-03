@@ -1,7 +1,7 @@
 repos:
   # Order matters because pyupgrade may make changes that pycln and black have to clean up
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.7.0
+    rev: v3.8.0
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
