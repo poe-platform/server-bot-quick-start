@@ -28,7 +28,7 @@ bot = EchoBot()
 # of the form (botname1 vs botname2)
 # bot = BattleBot()
 
-# The following is the setup code that is required to host with modal.com
+# The following is setup code that is required to host with modal.com
 image = Image.debian_slim().pip_install_from_requirements("requirements.txt")
 # Rename "poe-bot-quickstart" to your preferred app name.
 stub = Stub("poe-bot-quickstart")
