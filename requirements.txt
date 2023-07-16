@@ -1,1 +1,2 @@
 fastapi-poe==0.0.14
+huggingface-hub==0.16.4
