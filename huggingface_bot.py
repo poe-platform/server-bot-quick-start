@@ -5,14 +5,17 @@ Bot that lets you talk to conversational models available on HuggingFace.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import AsyncIterable
 
 from fastapi_poe import PoeBot
 from fastapi_poe.types import QueryRequest
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
+from huggingface_hub.inference._types import ConversationalOutput
 from sse_starlette.sse import ServerSentEvent
 
 
+@dataclass
 class HuggingFaceBot(PoeBot):
     """This bot uses the HuggingFace Inference API.
 
@@ -27,16 +30,15 @@ class HuggingFaceBot(PoeBot):
 
     """
 
-    def __init__(self, model: str, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        if model is None:
-            raise ValueError("Unsupported model: {model}")
-        self.client = InferenceClient(model=model)
+    model: str
+
+    def __post_init__(self) -> None:
+        self.client = AsyncInferenceClient(model=self.model)
 
     async def query_hf_model(
         self, current_message_text, bot_messages: list[str], user_messages: list[str]
-    ) -> tuple[int, dict]:
-        return self.client.conversational(
+    ) -> ConversationalOutput:
+        return await self.client.conversational(
             current_message_text, bot_messages, user_messages
         )
 
