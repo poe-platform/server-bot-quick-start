@@ -9,10 +9,9 @@ from dataclasses import dataclass
 from typing import AsyncIterable
 
 from fastapi_poe import PoeBot
-from fastapi_poe.types import QueryRequest
+from fastapi_poe.types import PartialResponse, QueryRequest
 from huggingface_hub import AsyncInferenceClient
 from huggingface_hub.inference._types import ConversationalOutput
-from sse_starlette.sse import ServerSentEvent
 
 
 @dataclass
@@ -36,13 +35,16 @@ class HuggingFaceBot(PoeBot):
         self.client = AsyncInferenceClient(model=self.model)
 
     async def query_hf_model(
-        self, current_message_text, bot_messages: list[str], user_messages: list[str]
+        self,
+        current_message_text: str,
+        bot_messages: list[str],
+        user_messages: list[str],
     ) -> ConversationalOutput:
         return await self.client.conversational(
             current_message_text, bot_messages, user_messages
         )
 
-    async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
+    async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
         user_messages = []
         bot_messages = []
         for message in query.query:
@@ -57,10 +59,10 @@ class HuggingFaceBot(PoeBot):
                 raise ValueError(f"unknown role {message.role}")
 
         if len(user_messages) != len(bot_messages) + 1:
-            yield self.text_event("Incorrect number of user and bot messages")
+            yield PartialResponse(text="Incorrect number of user and bot messages")
         current_message_text = user_messages.pop()
 
         response_data = await self.query_hf_model(
             current_message_text, bot_messages, user_messages
         )
-        yield self.text_event(response_data["generated_text"])
+        yield PartialResponse(text=response_data["generated_text"])

@@ -10,11 +10,10 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 from fastapi_poe import PoeBot
-from fastapi_poe.types import QueryRequest
-from sse_starlette.sse import ServerSentEvent
+from fastapi_poe.types import PartialResponse, QueryRequest
 
 
 class EchoBot(PoeBot):
-    async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
+    async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
         last_message = query.query[-1].content
-        yield self.text_event(last_message)
+        yield PartialResponse(text=last_message)
