@@ -12,7 +12,12 @@ from typing import AsyncIterable, AsyncIterator, Sequence
 
 from fastapi_poe import PoeBot
 from fastapi_poe.client import BotMessage, MetaMessage, stream_request
-from fastapi_poe.types import ProtocolMessage, QueryRequest
+from fastapi_poe.types import (
+    ProtocolMessage,
+    QueryRequest,
+    SettingsRequest,
+    SettingsResponse,
+)
 from sse_starlette.sse import ServerSentEvent
 
 COMPARE_REGEX = r"\s([A-Za-z_\-\d]+)\s+vs\.?\s+([A-Za-z_\-\d]+)\s*$"
@@ -110,3 +115,8 @@ class BattleBot(PoeBot):
                 for label, chunks in label_to_responses.items()
             )
             yield self.replace_response_event(text)
+
+    async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
+        return SettingsResponse(
+            server_bot_dependencies={"any": 2}, allow_attachments=True
+        )
