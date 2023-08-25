@@ -22,9 +22,7 @@ from fastapi_poe.types import (
 )
 from sse_starlette.sse import ServerSentEvent
 
-SETTINGS = SettingsResponse(
-    context_clear_window_secs=60 * 60, allow_user_context_clear=True
-)
+SETTINGS = SettingsResponse(allow_user_context_clear=True, allow_attachments=True)
 
 
 class CatBot(PoeBot):

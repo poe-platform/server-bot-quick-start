@@ -53,7 +53,7 @@ def get_bots_to_compare(messages: Sequence[ProtocolMessage]) -> tuple[str, str]:
         match = re.search(COMPARE_REGEX, message.content)
         if match is not None:
             return match.groups()
-    return ("sage", "claude-instant")
+    return ("assistant", "claude-instant")
 
 
 def preprocess_message(message: ProtocolMessage, bot: str) -> ProtocolMessage:
