@@ -1,4 +1,4 @@
-# Poe API Bot tutorial
+# Poe server bot tutorial
 
 This is the companion repository to the Poe server bot
 [quick start](https://developer.poe.com/server-bots/quick-start). Please follow that guide
