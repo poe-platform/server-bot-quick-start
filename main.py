@@ -1,6 +1,6 @@
-# Welcome to the Poe server bot tutorial. This starter code allows you to quickly get a bot
-# running. By default, the code uses the EchoBot, which is a simple bot that echos
-# a message back at its user and is a good starting point for your bot, but you can
+# Welcome to the Poe server bot quick start. This repo includes starter code that allows you to
+# quickly get a bot running. By default, the code uses the EchoBot, which is a simple bot that 
+# echos a message back at its user and is a good starting point for your bot, but you can
 # comment/uncomment any of the following code to try out other example bots or build on top
 # of the EchoBot.
 
@@ -18,7 +18,7 @@ bot = EchoBot()
 
 # A sample bot that showcases the capabilities the protocol provides. Please see the
 # following link for the full set of available message commands:
-# https://github.com/poe-platform/server-bot-tutorial/blob/main/catbot/catbot.md
+# https://github.com/poe-platform/server-bot-quick-start/blob/main/catbot/catbot.md
 # bot = CatBot()
 
 # A bot that uses Poe's ChatGPT bot, but makes all messages ALL CAPS.
@@ -36,8 +36,8 @@ bot = EchoBot()
 
 # The following is setup code that is required to host with modal.com
 image = Image.debian_slim().pip_install_from_requirements("requirements.txt")
-# Rename "poe-bot-quickstart" to your preferred app name.
-stub = Stub("poe-server-bot-quickstart")
+# Rename "poe-server-bot-quick-start" to your preferred app name.
+stub = Stub("poe-server-bot-quick-start")
 
 
 @stub.function(image=image)
