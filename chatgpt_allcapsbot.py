@@ -15,7 +15,7 @@ from sse_starlette.sse import ServerSentEvent
 
 class ChatGPTAllCapsBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
-        async for msg in stream_request(query, "chatGPT", query.api_key):
+        async for msg in stream_request(query, "chatGPT", query.access_key):
             if isinstance(msg, MetaMessage):
                 yield self.meta_event(
                     content_type=msg.content_type,
