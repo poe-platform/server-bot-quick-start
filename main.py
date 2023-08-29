@@ -26,7 +26,7 @@ bot = EchoBot()
 # For more details, see: https://developer.poe.com/server-bots/accessing-other-bots-on-poe
 # bot = ChatGPTAllCapsBot()
 
-# A bot that calls two different bots (default to Sage and Claude-Instant) and displays the
+# A bot that calls two different bots (default to Assistant and Claude-Instant) and displays the
 # results. Users can decide what bots to call by including in the message a string
 # of the form (botname1 vs botname2)
 # bot = BattleBot()
