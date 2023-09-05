@@ -1,5 +1,5 @@
 # Welcome to the Poe server bot quick start. This repo includes starter code that allows you to
-# quickly get a bot running. By default, the code uses the EchoBot, which is a simple bot that 
+# quickly get a bot running. By default, the code uses the EchoBot, which is a simple bot that
 # echos a message back at its user and is a good starting point for your bot, but you can
 # comment/uncomment any of the following code to try out other example bots or build on top
 # of the EchoBot.
