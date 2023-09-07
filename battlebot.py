@@ -94,7 +94,7 @@ class BattleBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
         bots = get_bots_to_compare(query.query)
         streams = [
-            (bot, stream_request(preprocess_query(query, bot), bot, query.api_key))
+            (bot, stream_request(preprocess_query(query, bot), bot, query.access_key))
             for bot in bots
         ]
         label_to_responses: dict[str, list[str]] = defaultdict(list)
