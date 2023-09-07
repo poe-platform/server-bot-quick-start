@@ -1,2 +1,2 @@
-fastapi-poe==0.0.17
+fastapi-poe==0.0.19
 huggingface-hub==0.16.4

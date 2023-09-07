@@ -11,21 +11,22 @@ from collections import defaultdict
 from typing import AsyncIterable, AsyncIterator, Sequence
 
 from fastapi_poe import PoeBot
-from fastapi_poe.client import BotMessage, MetaMessage, stream_request
+from fastapi_poe.client import stream_request
 from fastapi_poe.types import (
+    MetaResponse,
+    PartialResponse,
     ProtocolMessage,
     QueryRequest,
     SettingsRequest,
     SettingsResponse,
 )
-from sse_starlette.sse import ServerSentEvent
 
 COMPARE_REGEX = r"\s([A-Za-z_\-\d]+)\s+vs\.?\s+([A-Za-z_\-\d]+)\s*$"
 
 
 async def advance_stream(
-    label: str, gen: AsyncIterator[BotMessage]
-) -> tuple[str, BotMessage | Exception | None]:
+    label: str, gen: AsyncIterator[PartialResponse]
+) -> tuple[str, PartialResponse | Exception | None]:
     try:
         return label, await gen.__anext__()
     except StopAsyncIteration:
@@ -35,8 +36,8 @@ async def advance_stream(
 
 
 async def combine_streams(
-    streams: Sequence[tuple[str, AsyncIterator[BotMessage]]]
-) -> AsyncIterator[tuple[str, BotMessage | Exception]]:
+    streams: Sequence[tuple[str, AsyncIterator[PartialResponse]]]
+) -> AsyncIterator[tuple[str, PartialResponse | Exception]]:
     active_streams = dict(streams)
     while active_streams:
         for coro in asyncio.as_completed(
@@ -91,7 +92,7 @@ def preprocess_query(query: QueryRequest, bot: str) -> QueryRequest:
 
 
 class BattleBot(PoeBot):
-    async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
+    async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
         bots = get_bots_to_compare(query.query)
         streams = [
             (bot, stream_request(preprocess_query(query, bot), bot, query.access_key))
@@ -99,12 +100,12 @@ class BattleBot(PoeBot):
         ]
         label_to_responses: dict[str, list[str]] = defaultdict(list)
         async for label, msg in combine_streams(streams):
-            if isinstance(msg, MetaMessage):
+            if isinstance(msg, MetaResponse):
                 continue
             elif isinstance(msg, Exception):
                 label_to_responses[label] = [f"{label} ran into an error"]
             elif msg.is_suggested_reply:
-                yield self.suggested_reply_event(msg.text)
+                yield msg
                 continue
             elif msg.is_replace_response:
                 label_to_responses[label] = [msg.text]
@@ -114,7 +115,7 @@ class BattleBot(PoeBot):
                 f"**{label.title()}** says:\n{''.join(chunks)}"
                 for label, chunks in label_to_responses.items()
             )
-            yield self.replace_response_event(text)
+            yield PartialResponse(text=text, replace_response=True)
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
