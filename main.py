@@ -7,7 +7,7 @@
 from fastapi_poe import make_app
 from modal import Image, Stub, asgi_app
 
-from battlebot import BattleBot
+from chatgpt_vs_claude import ChatGPTvsClaudeBot
 from catbot import CatBot
 from chatgpt_allcapsbot import ChatGPTAllCapsBot
 from echobot import EchoBot
@@ -26,10 +26,8 @@ bot = EchoBot()
 # For more details, see: https://developer.poe.com/server-bots/accessing-other-bots-on-poe
 # bot = ChatGPTAllCapsBot()
 
-# A bot that calls two different bots (default to Assistant and Claude-Instant) and displays the
-# results. Users can decide what bots to call by including in the message a string
-# of the form (botname1 vs botname2)
-# bot = BattleBot()
+# A bot that calls bot ChatGPT and Claude-instant and displays the results.
+# bot = ChatGPTvsClaudeBot()
 
 # A chatbot based on a model hosted on HuggingFace.
 # bot = HuggingFaceBot("microsoft/DialoGPT-medium")
