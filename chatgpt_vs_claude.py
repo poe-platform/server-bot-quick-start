@@ -1,6 +1,6 @@
 """
 
-Sample bot that returns interleaved results from multiple bots.
+Sample bot that returns interleaved results from ChatGPT and Claude-instant.
 
 """
 from __future__ import annotations
@@ -20,8 +20,6 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
-
-COMPARE_REGEX = r"\s([A-Za-z_\-\d]+)\s+vs\.?\s+([A-Za-z_\-\d]+)\s*$"
 
 
 async def advance_stream(
@@ -52,32 +50,18 @@ async def combine_streams(
                 yield label, msg
 
 
-def get_bots_to_compare(messages: Sequence[ProtocolMessage]) -> tuple[str, str]:
-    for message in reversed(messages):
-        if message.role != "user":
-            continue
-        match = re.search(COMPARE_REGEX, message.content)
-        if match is not None:
-            return match.groups()
-    return ("assistant", "claude-instant")
-
-
 def preprocess_message(message: ProtocolMessage, bot: str) -> ProtocolMessage:
     """Preprocess the conversation history.
 
-    For user messages, remove "x vs. y" from the end of the message.
-
     For bot messages, try to keep only the parts of the message that come from
     the bot we're querying.
+
     """
-    if message.role == "user":
-        new_content = re.sub(COMPARE_REGEX, "", message.content)
-        return message.copy(update={"content": new_content})
-    elif message.role == "bot":
+    if message.role == "bot":
         parts = re.split(r"\*\*([A-Za-z_\-\d]+)\*\* says:\n", message.content)
         for message_bot, text in zip(parts[1::2], parts[2::2]):
             if message_bot.casefold() == bot.casefold():
-                return message.copy(update={"content": text})
+                return message.model_copy(update={"content": text})
         # If we can't find a message by this bot, just return the original message
         return message
     else:
@@ -85,18 +69,17 @@ def preprocess_message(message: ProtocolMessage, bot: str) -> ProtocolMessage:
 
 
 def preprocess_query(query: QueryRequest, bot: str) -> QueryRequest:
-    new_query = query.copy(
+    new_query = query.model_copy(
         update={"query": [preprocess_message(message, bot) for message in query.query]}
     )
     return new_query
 
 
-class BattleBot(PoeBot):
+class ChatGPTvsClaudeBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
-        bots = get_bots_to_compare(query.query)
         streams = [
             (bot, stream_request(preprocess_query(query, bot), bot, query.access_key))
-            for bot in bots
+            for bot in ("ChatGPT", "Claude-instant")
         ]
         label_to_responses: dict[str, list[str]] = defaultdict(list)
         async for label, msg in combine_streams(streams):
@@ -115,9 +98,9 @@ class BattleBot(PoeBot):
                 f"**{label.title()}** says:\n{''.join(chunks)}"
                 for label, chunks in label_to_responses.items()
             )
-            yield PartialResponse(text=text, replace_response=True)
+            yield PartialResponse(text=text, is_replace_response=True)
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            server_bot_dependencies={"any": 2}, allow_attachments=True
+            server_bot_dependencies={"ChatGPT": 1, "Claude-instant": 1}
         )
