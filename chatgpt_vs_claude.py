@@ -8,7 +8,7 @@ from __future__ import annotations
 import asyncio
 import re
 from collections import defaultdict
-from typing import AsyncIterable, AsyncIterator, Sequence
+from typing import AsyncIterable, AsyncIterator
 
 from fastapi_poe import PoeBot
 from fastapi_poe.client import stream_request
@@ -22,41 +22,55 @@ from fastapi_poe.types import (
 )
 
 
-async def advance_stream(
-    label: str, gen: AsyncIterator[PartialResponse]
-) -> tuple[str, PartialResponse | Exception | None]:
-    try:
-        return label, await gen.__anext__()
-    except StopAsyncIteration:
-        return label, None
-    except Exception as e:
-        return label, e
-
-
 async def combine_streams(
-    streams: Sequence[tuple[str, AsyncIterator[PartialResponse]]]
-) -> AsyncIterator[tuple[str, PartialResponse | Exception]]:
-    active_streams = dict(streams)
+    *streams: AsyncIterator[PartialResponse],
+) -> AsyncIterator[PartialResponse]:
+    """Combines a list of streams into one single response stream.
+
+    Allows you to render multiple responses in parallel.
+
+    """
+    active_streams = {id(stream): stream for stream in streams}
+    responses: dict[int, list[str]] = defaultdict(list)
+
+    async def _advance_stream(
+        stream_id: int, gen: AsyncIterator[PartialResponse]
+    ) -> tuple[int, PartialResponse | None]:
+        try:
+            return stream_id, await gen.__anext__()
+        except StopAsyncIteration:
+            return stream_id, None
+
     while active_streams:
         for coro in asyncio.as_completed(
-            [advance_stream(label, gen) for label, gen in active_streams.items()]
+            [
+                _advance_stream(stream_id, gen)
+                for stream_id, gen in active_streams.items()
+            ]
         ):
-            label, msg = await coro
+            stream_id, msg = await coro
             if msg is None:
-                del active_streams[label]
+                del active_streams[stream_id]
+                continue
+
+            if isinstance(msg, MetaResponse):
+                continue
+            elif msg.is_suggested_reply:
+                yield msg
+                continue
+            elif msg.is_replace_response:
+                responses[stream_id] = [msg.text]
             else:
-                if isinstance(msg, Exception):
-                    del active_streams[label]
-                yield label, msg
+                responses[stream_id].append(msg.text)
+
+            text = "\n\n".join(
+                "".join(chunks) for stream_id, chunks in responses.items()
+            )
+            yield PartialResponse(text=text, is_replace_response=True)
 
 
 def preprocess_message(message: ProtocolMessage, bot: str) -> ProtocolMessage:
-    """Preprocess the conversation history.
-
-    For bot messages, try to keep only the parts of the message that come from
-    the bot we're querying.
-
-    """
+    """Process bot responses to keep only the parts that come from the given bot."""
     if message.role == "bot":
         parts = re.split(r"\*\*([A-Za-z_\-\d]+)\*\* says:\n", message.content)
         for message_bot, text in zip(parts[1::2], parts[2::2]):
@@ -69,36 +83,36 @@ def preprocess_message(message: ProtocolMessage, bot: str) -> ProtocolMessage:
 
 
 def preprocess_query(query: QueryRequest, bot: str) -> QueryRequest:
+    """Parses the two bot responses and keeps the one for the current bot."""
     new_query = query.model_copy(
         update={"query": [preprocess_message(message, bot) for message in query.query]}
     )
     return new_query
 
 
+async def stream_request_wrapper(
+    query: QueryRequest, bot: str
+) -> AsyncIterator[PartialResponse]:
+    """Wraps stream_request and labels the bot response with the bot name."""
+    yield PartialResponse(text=f"**{bot.title()}** says:\n")
+    async for msg in stream_request(
+        preprocess_query(query, bot), bot, query.access_key
+    ):
+        if isinstance(msg, Exception):
+            yield PartialResponse(
+                text=f"**{bot.title()}** ran into an error", is_replace_response=True
+            )
+            return
+        yield msg
+
+
 class ChatGPTvsClaudeBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
         streams = [
-            (bot, stream_request(preprocess_query(query, bot), bot, query.access_key))
-            for bot in ("ChatGPT", "Claude-instant")
+            stream_request_wrapper(query, bot) for bot in ("ChatGPT", "Claude-instant")
         ]
-        label_to_responses: dict[str, list[str]] = defaultdict(list)
-        async for label, msg in combine_streams(streams):
-            if isinstance(msg, MetaResponse):
-                continue
-            elif isinstance(msg, Exception):
-                label_to_responses[label] = [f"{label} ran into an error"]
-            elif msg.is_suggested_reply:
-                yield msg
-                continue
-            elif msg.is_replace_response:
-                label_to_responses[label] = [msg.text]
-            else:
-                label_to_responses[label].append(msg.text)
-            text = "\n\n".join(
-                f"**{label.title()}** says:\n{''.join(chunks)}"
-                for label, chunks in label_to_responses.items()
-            )
-            yield PartialResponse(text=text, is_replace_response=True)
+        async for msg in combine_streams(*streams):
+            yield msg
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
