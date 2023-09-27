@@ -23,10 +23,15 @@ bot = EchoBot()
 
 # A bot that uses Poe's ChatGPT bot, but makes all messages ALL CAPS.
 # Good simple example of using another bot using Poe's third party bot API.
+# Please note that since this bot uses another Poe bot, you need to update this bot's settings on
+# Poe by following the instructions at: https://developer.poe.com/server-bots/updating-bot-settings
 # For more details, see: https://developer.poe.com/server-bots/accessing-other-bots-on-poe
 # bot = ChatGPTAllCapsBot()
 
 # A bot that calls bot ChatGPT and Claude-instant and displays the results.
+# Please note that since this bot uses another Poe bot, you need to update this bot's settings on
+# Poe by following the instructions at: https://developer.poe.com/server-bots/updating-bot-settings
+# For more details, see: https://developer.poe.com/server-bots/accessing-other-bots-on-poe
 # bot = ChatGPTvsClaudeBot()
 
 # A chatbot based on a model hosted on HuggingFace.
