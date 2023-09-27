@@ -94,7 +94,7 @@ async def stream_request_wrapper(
     query: QueryRequest, bot: str
 ) -> AsyncIterator[PartialResponse]:
     """Wraps stream_request and labels the bot response with the bot name."""
-    label = PartialResponse(text=f"**{bot.title()}** says:\n")
+    label = PartialResponse(text=f"**{bot.title()}** says:\n", is_replace_response=True)
     yield label
     async for msg in stream_request(
         preprocess_query(query, bot), bot, query.access_key
@@ -106,7 +106,8 @@ async def stream_request_wrapper(
             return
         elif msg.is_replace_response:
             yield label
-        yield msg
+        # Need to force replace response to False because we are already explicitly handling that case above.
+        yield msg.model_copy(update={"is_replace_response": False})
 
 
 class ChatGPTvsClaudeBot(PoeBot):
