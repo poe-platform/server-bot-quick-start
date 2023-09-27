@@ -106,7 +106,7 @@ async def stream_request_wrapper(
             return
         elif msg.is_replace_response:
             yield label
-        # Need to force replace response to False because we are already explicitly handling that case above.
+        # Force replace response to False since we are already explicitly handling that case above.
         yield msg.model_copy(update={"is_replace_response": False})
 
 
