@@ -94,7 +94,8 @@ async def stream_request_wrapper(
     query: QueryRequest, bot: str
 ) -> AsyncIterator[PartialResponse]:
     """Wraps stream_request and labels the bot response with the bot name."""
-    yield PartialResponse(text=f"**{bot.title()}** says:\n")
+    label = PartialResponse(text=f"**{bot.title()}** says:\n")
+    yield label
     async for msg in stream_request(
         preprocess_query(query, bot), bot, query.access_key
     ):
@@ -103,6 +104,8 @@ async def stream_request_wrapper(
                 text=f"**{bot.title()}** ran into an error", is_replace_response=True
             )
             return
+        elif msg.is_replace_response:
+            yield label
         yield msg
 
 
