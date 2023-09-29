@@ -1,6 +1,6 @@
 """
 
-Sample bot that returns interleaved results from ChatGPT and Claude-instant.
+Sample bot that returns interleaved results from GPT-3.5-Turbo and Claude-instant.
 
 """
 from __future__ import annotations
@@ -110,15 +110,16 @@ async def stream_request_wrapper(
         yield msg.model_copy(update={"is_replace_response": False})
 
 
-class ChatGPTvsClaudeBot(PoeBot):
+class GPT35TurbovsClaudeBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
         streams = [
-            stream_request_wrapper(query, bot) for bot in ("ChatGPT", "Claude-instant")
+            stream_request_wrapper(query, bot)
+            for bot in ("GPT-3.5-Turbo", "Claude-instant")
         ]
         async for msg in combine_streams(*streams):
             yield msg
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            server_bot_dependencies={"ChatGPT": 1, "Claude-instant": 1}
+            server_bot_dependencies={"GPT-3.5-Turbo": 1, "Claude-instant": 1}
         )

@@ -8,10 +8,10 @@ from fastapi_poe import make_app
 from modal import Image, Stub, asgi_app
 
 from catbot import CatBot
-from chatgpt_allcapsbot import ChatGPTAllCapsBot
-from chatgpt_vs_claude import ChatGPTvsClaudeBot
 from echobot import EchoBot
 from huggingface_bot import HuggingFaceBot
+from turbo_allcapsbot import GPT35TurboAllCapsBot
+from turbo_vs_claude import GPT35TurbovsClaudeBot
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
 bot = EchoBot()
@@ -21,18 +21,18 @@ bot = EchoBot()
 # https://github.com/poe-platform/server-bot-quick-start/blob/main/catbot/catbot.md
 # bot = CatBot()
 
-# A bot that uses Poe's ChatGPT bot, but makes all messages ALL CAPS.
+# A bot that uses Poe's GPT-3.5-Turbo bot, but makes all messages ALL CAPS.
 # Good simple example of using another bot using Poe's third party bot API.
 # Please note that since this bot uses another Poe bot, you need to update this bot's settings on
 # Poe by following the instructions at: https://developer.poe.com/server-bots/updating-bot-settings
 # For more details, see: https://developer.poe.com/server-bots/accessing-other-bots-on-poe
-# bot = ChatGPTAllCapsBot()
+# bot = GPT35TurboAllCapsBot()
 
-# A bot that calls bot ChatGPT and Claude-instant and displays the results.
+# A bot that calls bot GPT-3.5-Turbo and Claude-instant and displays the results.
 # Please note that since this bot uses another Poe bot, you need to update this bot's settings on
 # Poe by following the instructions at: https://developer.poe.com/server-bots/updating-bot-settings
 # For more details, see: https://developer.poe.com/server-bots/accessing-other-bots-on-poe
-# bot = ChatGPTvsClaudeBot()
+# bot = GPT35TurbovsClaudeBot()
 
 # A chatbot based on a model hosted on HuggingFace.
 # bot = HuggingFaceBot("microsoft/DialoGPT-medium")
