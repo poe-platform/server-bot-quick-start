@@ -18,7 +18,9 @@ from fastapi_poe.types import (
 
 
 class GPT35TurboAllCapsBot(PoeBot):
-    async def get_response(self, request: QueryRequest) -> AsyncIterable[PartialResponse]:
+    async def get_response(
+        self, request: QueryRequest
+    ) -> AsyncIterable[PartialResponse]:
         async for msg in stream_request(query, "GPT-3.5-Turbo", request.access_key):
             yield msg.model_copy(update={"text": msg.text.upper()})
 
