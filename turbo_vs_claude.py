@@ -85,7 +85,9 @@ def preprocess_message(message: ProtocolMessage, bot: str) -> ProtocolMessage:
 def preprocess_query(request: QueryRequest, bot: str) -> QueryRequest:
     """Parses the two bot responses and keeps the one for the current bot."""
     new_query = request.model_copy(
-        update={"query": [preprocess_message(message, bot) for message in request.query]}
+        update={
+            "query": [preprocess_message(message, bot) for message in request.query]
+        }
     )
     return new_query
 
@@ -111,7 +113,9 @@ async def stream_request_wrapper(
 
 
 class GPT35TurbovsClaudeBot(PoeBot):
-    async def get_response(self, request: QueryRequest) -> AsyncIterable[PartialResponse]:
+    async def get_response(
+        self, request: QueryRequest
+    ) -> AsyncIterable[PartialResponse]:
         streams = [
             stream_request_wrapper(request, bot)
             for bot in ("GPT-3.5-Turbo", "Claude-instant")
