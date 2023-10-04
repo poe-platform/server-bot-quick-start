@@ -44,10 +44,10 @@ class HuggingFaceBot(PoeBot):
             current_message_text, bot_messages, user_messages
         )
 
-    async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
+    async def get_response(self, request: QueryRequest) -> AsyncIterable[PartialResponse]:
         user_messages = []
         bot_messages = []
-        for message in query.query:
+        for message in request.query:
             if message.role == "user":
                 if len(user_messages) == len(bot_messages):
                     user_messages.append(message.content)

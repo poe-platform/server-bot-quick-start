@@ -14,6 +14,6 @@ from fastapi_poe.types import PartialResponse, QueryRequest
 
 
 class EchoBot(PoeBot):
-    async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
-        last_message = query.query[-1].content
+    async def get_response(self, request: QueryRequest) -> AsyncIterable[PartialResponse]:
+        last_message = request.query[-1].content
         yield PartialResponse(text=last_message)
