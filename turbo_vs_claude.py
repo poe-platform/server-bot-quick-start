@@ -82,22 +82,24 @@ def preprocess_message(message: ProtocolMessage, bot: str) -> ProtocolMessage:
         return message
 
 
-def preprocess_query(query: QueryRequest, bot: str) -> QueryRequest:
+def preprocess_query(request: QueryRequest, bot: str) -> QueryRequest:
     """Parses the two bot responses and keeps the one for the current bot."""
-    new_query = query.model_copy(
-        update={"query": [preprocess_message(message, bot) for message in query.query]}
+    new_query = request.model_copy(
+        update={
+            "query": [preprocess_message(message, bot) for message in request.query]
+        }
     )
     return new_query
 
 
 async def stream_request_wrapper(
-    query: QueryRequest, bot: str
+    request: QueryRequest, bot: str
 ) -> AsyncIterator[PartialResponse]:
     """Wraps stream_request and labels the bot response with the bot name."""
     label = PartialResponse(text=f"**{bot.title()}** says:\n", is_replace_response=True)
     yield label
     async for msg in stream_request(
-        preprocess_query(query, bot), bot, query.access_key
+        preprocess_query(request, bot), bot, request.access_key
     ):
         if isinstance(msg, Exception):
             yield PartialResponse(
@@ -111,9 +113,11 @@ async def stream_request_wrapper(
 
 
 class GPT35TurbovsClaudeBot(PoeBot):
-    async def get_response(self, query: QueryRequest) -> AsyncIterable[PartialResponse]:
+    async def get_response(
+        self, request: QueryRequest
+    ) -> AsyncIterable[PartialResponse]:
         streams = [
-            stream_request_wrapper(query, bot)
+            stream_request_wrapper(request, bot)
             for bot in ("GPT-3.5-Turbo", "Claude-instant")
         ]
         async for msg in combine_streams(*streams):
