@@ -22,7 +22,7 @@ bot = EchoBot()
 # bot = CatBot()
 
 # A bot that uses Poe's GPT-3.5-Turbo bot, but makes all messages ALL CAPS.
-# Good simple example of using another bot using Poe's third party bot API.
+# Good simple example of using another bot using Poe's bot query API.
 # Please note that since this bot uses another Poe bot, you need to update this bot's settings on
 # Poe by following the instructions at: https://developer.poe.com/server-bots/updating-bot-settings
 # For more details, see: https://developer.poe.com/server-bots/accessing-other-bots-on-poe
