@@ -10,6 +10,7 @@ from modal import Image, Stub, asgi_app
 from catbot import CatBot
 from echobot import EchoBot
 from huggingface_bot import HuggingFaceBot
+from langchain_openai import LangchainOpenAIChatBot
 from turbo_allcapsbot import GPT35TurboAllCapsBot
 from turbo_vs_claude import GPT35TurbovsClaudeBot
 
@@ -36,6 +37,10 @@ bot = EchoBot()
 
 # A chatbot based on a model hosted on HuggingFace.
 # bot = HuggingFaceBot("microsoft/DialoGPT-medium")
+
+# A OpenAI powered chatbot built using Langchain.
+# OPENAI_API_KEY = ""
+# bot = LangchainOpenAIChatBot(OPENAI_API_KEY=OPENAI_API_KEY)
 
 # The following is setup code that is required to host with modal.com
 image = Image.debian_slim().pip_install_from_requirements("requirements.txt")
