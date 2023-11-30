@@ -14,12 +14,7 @@ import asyncio
 import json
 from typing import AsyncIterable
 
-
 from fastapi_poe import PoeBot, make_app
-from fastapi_poe.types import PartialResponse, QueryRequest
-from modal import Image, Stub, asgi_app
-
-from fastapi_poe import PoeBot
 from fastapi_poe.types import (
     ContentType,
     ErrorResponse,
@@ -30,6 +25,7 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
+from modal import Image, Stub, asgi_app
 from sse_starlette.sse import ServerSentEvent
 
 SETTINGS = SettingsResponse(allow_user_context_clear=True, allow_attachments=True)
@@ -116,12 +112,12 @@ class CatBot(PoeBot):
         return SettingsResponse(allow_attachments=True)
 
 
-
 bot = CatBot()
 
 # The following is setup code that is required to host with modal.com
 image = Image.debian_slim().pip_install("fastapi_poe==0.0.23")
 stub = Stub("poe-server-bot-quick-start")
+
 
 @stub.function(image=image)
 @asgi_app()
