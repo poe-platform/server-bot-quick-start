@@ -7,15 +7,12 @@
 from fastapi_poe import make_app
 from modal import Image, Stub, asgi_app
 
-from catbot import CatBot
-from echobot import EchoBot
 from huggingface_bot import HuggingFaceBot
 from langchain_openai import LangchainOpenAIChatBot
-from turbo_allcapsbot import GPT35TurboAllCapsBot
 from turbo_vs_claude import GPT35TurbovsClaudeBot
 
 # Echo bot is a very simple bot that just echoes back the user's last message.
-bot = EchoBot()
+bot = GPT35TurbovsClaudeBot()
 
 # A sample bot that showcases the capabilities the protocol provides. Please see the
 # following link for the full set of available message commands:
@@ -44,7 +41,6 @@ bot = EchoBot()
 
 # The following is setup code that is required to host with modal.com
 image = Image.debian_slim().pip_install_from_requirements("requirements.txt")
-# Rename "poe-server-bot-quick-start" to your preferred app name.
 stub = Stub("poe-server-bot-quick-start")
 
 
