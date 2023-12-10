@@ -2,19 +2,18 @@ from __future__ import annotations
 
 from typing import AsyncIterable
 
-from fastapi_poe import PoeBot
-from fastapi_poe.types import PartialResponse, QueryRequest
+import fastapi_poe as fp
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 
 
-class LangchainOpenAIChatBot(PoeBot):
+class LangchainOpenAIChatBot(fp.PoeBot):
     def __init__(self, OPENAI_API_KEY: str):
         self.chat_model = ChatOpenAI(openai_api_key=OPENAI_API_KEY)
 
     async def get_response(
-        self, request: QueryRequest
-    ) -> AsyncIterable[PartialResponse]:
+        self, request: fp.QueryRequest
+    ) -> AsyncIterable[fp.PartialResponse]:
         messages = []
         for message in request.query:
             if message.role == "bot":
@@ -25,4 +24,4 @@ class LangchainOpenAIChatBot(PoeBot):
                 messages.append(HumanMessage(content=message.content))
 
         response = self.chat_model.predict_messages(messages).content
-        yield PartialResponse(text=response)
+        yield fp.PartialResponse(text=response)

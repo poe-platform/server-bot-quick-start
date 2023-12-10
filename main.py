@@ -4,7 +4,7 @@
 # comment/uncomment any of the following code to try out other example bots or build on top
 # of the EchoBot.
 
-from fastapi_poe import make_app
+import fastapi_poe as fp
 from modal import Image, Stub, asgi_app
 
 from catbot import CatBot
@@ -59,5 +59,5 @@ def fastapi_app():
     # by following the instructions at: https://modal.com/docs/guide/secrets
     # POE_ACCESS_KEY = ""
     # app = make_app(bot, access_key=POE_ACCESS_KEY)
-    app = make_app(bot, allow_without_key=True)
+    app = fp.make_app(bot, allow_without_key=True)
     return app

@@ -1,4 +1,4 @@
-fastapi-poe==0.0.23
+fastapi-poe==0.0.24
 huggingface-hub==0.16.4
 pydantic>=2
 openai==0.28.1

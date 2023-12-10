@@ -8,14 +8,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import AsyncIterable
 
-from fastapi_poe import PoeBot
-from fastapi_poe.types import PartialResponse, QueryRequest
+import fastapi_poe as fp
 from huggingface_hub import AsyncInferenceClient
 from huggingface_hub.inference._types import ConversationalOutput
 
 
 @dataclass
-class HuggingFaceBot(PoeBot):
+class HuggingFaceBot(fp.PoeBot):
     """This bot uses the HuggingFace Inference API.
 
     By default, it uses the HuggingFace public Inference API, but you can also
@@ -45,8 +44,8 @@ class HuggingFaceBot(PoeBot):
         )
 
     async def get_response(
-        self, request: QueryRequest
-    ) -> AsyncIterable[PartialResponse]:
+        self, request: fp.QueryRequest
+    ) -> AsyncIterable[fp.PartialResponse]:
         user_messages = []
         bot_messages = []
         for message in request.query:
@@ -61,10 +60,10 @@ class HuggingFaceBot(PoeBot):
                 raise ValueError(f"unknown role {message.role}")
 
         if len(user_messages) != len(bot_messages) + 1:
-            yield PartialResponse(text="Incorrect number of user and bot messages")
+            yield fp.PartialResponse(text="Incorrect number of user and bot messages")
         current_message_text = user_messages.pop()
 
         response_data = await self.query_hf_model(
             current_message_text, bot_messages, user_messages
         )
-        yield PartialResponse(text=response_data["generated_text"])
+        yield fp.PartialResponse(text=response_data["generated_text"])

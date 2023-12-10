@@ -9,13 +9,12 @@ from __future__ import annotations
 
 from typing import AsyncIterable
 
-from fastapi_poe import PoeBot
-from fastapi_poe.types import PartialResponse, QueryRequest
+import fastapi_poe as fp
 
 
-class EchoBot(PoeBot):
+class EchoBot(fp.PoeBot):
     async def get_response(
-        self, request: QueryRequest
-    ) -> AsyncIterable[PartialResponse]:
+        self, request: fp.QueryRequest
+    ) -> AsyncIterable[fp.PartialResponse]:
         last_message = request.query[-1].content
-        yield PartialResponse(text=last_message)
+        yield fp.PartialResponse(text=last_message)
