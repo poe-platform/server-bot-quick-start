@@ -10,7 +10,7 @@ from modal import Image, Stub, asgi_app
 
 class LangchainOpenAIChatBot(fp.PoeBot):
     def __init__(self, OPENAI_API_KEY: str):
-        self.chat_model = ChatOpenAI(openai_api_key=OPENAI_API_KEY)
+        self.chat_model = ChatOpenAI(api_key=OPENAI_API_KEY)
 
     async def get_response(
         self, request: fp.QueryRequest
@@ -25,7 +25,10 @@ class LangchainOpenAIChatBot(fp.PoeBot):
                 messages.append(HumanMessage(content=message.content))
 
         response = self.chat_model.predict_messages(messages).content
-        yield fp.PartialResponse(text=response)
+        if isinstance(response, str):
+            yield fp.PartialResponse(text=response)
+        else:
+            yield fp.PartialResponse(text="There was an issue processing your query.")
 
 
 REQUIREMENTS = ["fastapi-poe==0.0.24", "langchain==0.0.330", "openai==0.28.1"]
