@@ -11,6 +11,7 @@ from collections import defaultdict
 from typing import AsyncIterable, AsyncIterator
 
 import fastapi_poe as fp
+from modal import Image, Stub, asgi_app
 
 
 async def combine_streams(
@@ -120,3 +121,24 @@ class GPT35TurbovsClaudeBot(fp.PoeBot):
         return fp.SettingsResponse(
             server_bot_dependencies={"GPT-3.5-Turbo": 1, "Claude-instant": 1}
         )
+
+
+REQUIREMENTS = ["fastapi-poe==0.0.24"]
+image = Image.debian_slim().pip_install(*REQUIREMENTS)
+stub = Stub("turbo-vs-claude-poe")
+
+
+@stub.function(image=image)
+@asgi_app()
+def fastapi_app():
+    bot = GPT35TurbovsClaudeBot()
+    # Optionally, provide your Poe access key here:
+    # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
+    # 2. We strongly recommend using a key for a production bot to prevent abuse,
+    # but the starter examples disable the key check for convenience.
+    # 3. You can also store your access key on modal.com and retrieve it in this function
+    # by following the instructions at: https://modal.com/docs/guide/secrets
+    # POE_ACCESS_KEY = ""
+    # app = make_app(bot, access_key=POE_ACCESS_KEY)
+    app = fp.make_app(bot, allow_without_key=True)
+    return app
