@@ -12,7 +12,7 @@ deployment (the instructions for which are described in the aforementioned
 This bot simply repeats the user's query in the response and provides a good starting
 point to build any type of bot. To deploy, run `modal deploy echobot.py`
 
-A correct implementation would look like https://poe.com/EchoBotDemostration
+A correct implementation would look like https://poe.com/EchoBotDemonstration
 
 ### TurboAllCapsBot
 
@@ -41,7 +41,7 @@ A correct implementation would look like https://poe.com/ImageResponseBotDemo
 
 ### PDFCounterBot
 
-- A bot that demonstrates how to enable file upload for the user's of your bot.
+- A bot that demonstrates how to enable file upload for the users of your bot.
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
   [here](https://developer.poe.com/server-bots/updating-bot-settings).
