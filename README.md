@@ -12,6 +12,8 @@ deployment (the instructions for which are described in the aforementioned
 This bot simply repeats the user's query in the response and provides a good starting
 point to build any type of bot. To deploy, run `modal deploy echobot.py`
 
+A correct implementation would look like https://poe.com/EchoBotDemonstration
+
 ### TurboAllCapsBot
 
 - This bot responds to the user's query using GPT-3.5-Turbo. It demonstrates how to use
@@ -21,27 +23,36 @@ point to build any type of bot. To deploy, run `modal deploy echobot.py`
   with the Poe Platform, the instructions for which are specified
   [here](https://developer.poe.com/server-bots/updating-bot-settings).
 
+A correct implementation would look like https://poe.com/AllCapsBotDemo
+
 ### CatBot
 
 A sample bot that demonstrates the Markdown capabilities of the Poe API. To deploy, run
 `modal deploy catbot/__init__.py`
+
+A correct implementation would look like https://poe.com/CatBotDemo
 
 ### ImageResponseBot
 
 A bot that demonstrates how to render an image in the response using Markdown. To
 deploy, run `modal deploy image_response_bot.py`
 
-### PdfSizeComputerBot
+A correct implementation would look like https://poe.com/ImageResponseBotDemo
 
-- A bot that demonstrates how to enable file upload for the user's of your bot.
+### PDFCounterBot
+
+- A bot that demonstrates how to enable file upload for the users of your bot.
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
   [here](https://developer.poe.com/server-bots/updating-bot-settings).
+- To deploy, run `modal deploy pdf_counter_bot.py`
+
+A correct implementation would look like https://poe.com/PDFCounterBotDemo
 
 ### HuggingFaceBot
 
 Provides an example of a bot powered by a model hosted on HuggingFace. To deploy, run
-`modal depoy huggingface_bot.py`
+`modal deploy huggingface_bot.py`
 
 ### Langchain OpenAI
 
@@ -55,3 +66,5 @@ OpenAI key. To deploy, run `modal deploy langchain_openai.py`
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
   [here](https://developer.poe.com/server-bots/updating-bot-settings).
+
+A correct implementation would look like https://poe.com/TurboVsClaudeBotDemo
