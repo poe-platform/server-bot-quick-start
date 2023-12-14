@@ -21,7 +21,7 @@ class EchoBot(fp.PoeBot):
         yield fp.PartialResponse(text=last_message)
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.24"]
+REQUIREMENTS = ["fastapi-poe==0.0.25"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("echobot-poe")
 

@@ -44,7 +44,7 @@ class PDFSizeBot(fp.PoeBot):
         return fp.SettingsResponse(allow_attachments=True)
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.24", "PyPDF2==3.0.1", "requests==2.31.0"]
+REQUIREMENTS = ["fastapi-poe==0.0.25", "PyPDF2==3.0.1", "requests==2.31.0"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("pdf-counter-poe")
 
