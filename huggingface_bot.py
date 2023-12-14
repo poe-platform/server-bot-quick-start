@@ -66,7 +66,7 @@ class HuggingFaceConversationalBot(fp.PoeBot):
         yield fp.PartialResponse(text=response_data["generated_text"])
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.24", "huggingface-hub==0.16.4"]
+REQUIREMENTS = ["fastapi-poe==0.0.25", "huggingface-hub==0.16.4"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("huggingface-poe")
 
