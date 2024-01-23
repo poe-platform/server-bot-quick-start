@@ -59,7 +59,7 @@ A correct implementation would look like https://poe.com/PDFCounterBotDemo
 
 ### HttpRequestBot
 
-Provides an example of how to access http request information in your bot. To deploy,
+Provides an example of how to access HTTP request information in your bot. To deploy,
 run `modal deploy http_request_bot.py`
 
 ### HuggingFaceBot
