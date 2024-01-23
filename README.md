@@ -49,6 +49,19 @@ A correct implementation would look like https://poe.com/ImageResponseBotDemo
 
 A correct implementation would look like https://poe.com/PDFCounterBotDemo
 
+### Function calling bot
+
+- A bot that demonstrates how to use the Poe API for function calling.
+- Before you are able to use the bot, you also need to synchronize the bot's settings
+  with the Poe Platform, the instructions for which are specified
+  [here](https://developer.poe.com/server-bots/updating-bot-settings).
+- To deploy, run `modal deploy function_calling_bot.py`
+
+### HttpRequestBot
+
+Provides an example of how to access HTTP request information in your bot. To deploy,
+run `modal deploy http_request_bot.py`
+
 ### HuggingFaceBot
 
 Provides an example of a bot powered by a model hosted on HuggingFace. To deploy, run
