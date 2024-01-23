@@ -1,6 +1,6 @@
 """
 
-Sample bot that shows how to access the http request info.
+Sample bot that shows how to access the HTTP request.
 
 """
 from __future__ import annotations
