@@ -12,17 +12,17 @@ from modal import Image, Stub, asgi_app
 
 
 class HttpRequestBot(fp.PoeBot):
-    async def get_response(
-        self, request: fp.QueryRequest
+    async def get_response_with_context(
+        self, request: fp.QueryRequest, context: fp.RequestContext
     ) -> AsyncIterable[fp.PartialResponse]:
-        request_url = request.http_request.url
-        query_params = request.http_request.query_params
+        request_url = context.http_request.url
+        query_params = context.http_request.query_params
         yield fp.PartialResponse(
             text=f"The request url is: {request_url}, query params are: {query_params}"
         )
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.29"]
+REQUIREMENTS = ["fastapi-poe==0.0.31"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("http-request")
 
