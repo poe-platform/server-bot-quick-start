@@ -3,6 +3,7 @@
 Sample bot that returns interleaved results from GPT-3.5-Turbo and Claude-instant.
 
 """
+
 from __future__ import annotations
 
 import asyncio

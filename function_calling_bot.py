@@ -3,6 +3,7 @@
 Sample bot that demonstrates how to use OpenAI function calling with the Poe API.
 
 """
+
 from __future__ import annotations
 
 import json
