@@ -3,6 +3,7 @@
 Sample bot that shows how to access the HTTP request.
 
 """
+
 from __future__ import annotations
 
 from typing import AsyncIterable

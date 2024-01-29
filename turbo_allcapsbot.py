@@ -3,6 +3,7 @@
 Sample bot that wraps GPT-3.5-Turbo but makes responses use all-caps.
 
 """
+
 from __future__ import annotations
 
 from typing import AsyncIterable

@@ -3,6 +3,7 @@
 Bot that lets you talk to conversational models available on HuggingFace.
 
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
