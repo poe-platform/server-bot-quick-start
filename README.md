@@ -49,6 +49,14 @@ A correct implementation would look like https://poe.com/ImageResponseBotDemo
 
 A correct implementation would look like https://poe.com/PDFCounterBotDemo
 
+### VideoBot
+
+- A bot that demonstrates how to attach files to your bot response. This example
+  specifically uses video, but outputting other file types is fairly similar.
+- Before you are able to use this bot, you do need to set your access key. You can get
+  yours from the [create bot page](https://poe.com/create_bot?server=1).
+- To deploy, run `modal deploy video_bot.py`
+
 ### Function calling bot
 
 - A bot that demonstrates how to use the Poe API for function calling.
