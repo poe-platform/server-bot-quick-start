@@ -9,7 +9,7 @@ from modal import Image, Mount, Stub, asgi_app
 class VideoBot(fp.PoeBot):
     async def get_response(
         self, request: fp.QueryRequest
-    ) -> AsyncIterable[fp.PartialResponse | fp.ServerSentEvent]:
+    ) -> AsyncIterable[fp.PartialResponse]:
         with open("/root/assets/tiger.mp4", "rb") as file:
             file_data = file.read()
         await self.post_message_attachment(
