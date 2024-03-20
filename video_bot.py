@@ -18,7 +18,7 @@ class VideoBot(fp.PoeBot):
         yield fp.PartialResponse(text="Attached a video.")
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.34"]
+REQUIREMENTS = ["fastapi-poe==0.0.36"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("video-bot")
 
