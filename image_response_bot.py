@@ -17,7 +17,7 @@ class SampleImageResponseBot(fp.PoeBot):
         yield fp.PartialResponse(text=f"This is a test image. ![leopard]({IMAGE_URL})")
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.25"]
+REQUIREMENTS = ["fastapi-poe==0.0.36"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("image-response-poe")
 

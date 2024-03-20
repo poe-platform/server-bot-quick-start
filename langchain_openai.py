@@ -31,7 +31,7 @@ class LangchainOpenAIChatBot(fp.PoeBot):
             yield fp.PartialResponse(text="There was an issue processing your query.")
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.24", "langchain==0.0.330", "openai==0.28.1"]
+REQUIREMENTS = ["fastapi-poe==0.0.36", "langchain==0.0.330", "openai==0.28.1"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("langchain-openai-poe")
 
