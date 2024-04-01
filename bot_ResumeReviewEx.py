@@ -16,21 +16,14 @@ import os
 from io import BytesIO
 from typing import AsyncIterable
 
-import pytesseract
-from PIL import Image as PILImage
 import fastapi_poe.client
-import pdftotext
+import pytesseract
 import requests
-from docx import Document
 from fastapi_poe import PoeBot, make_app
 from fastapi_poe.client import MetaMessage, stream_request
-from fastapi_poe.types import (
-    ProtocolMessage,
-    QueryRequest,
-    SettingsRequest,
-    SettingsResponse,
-)
+from fastapi_poe.types import QueryRequest, SettingsRequest, SettingsResponse
 from modal import Image, Stub, asgi_app
+from PIL import Image as PILImage
 from sse_starlette.sse import ServerSentEvent
 
 fastapi_poe.client.MAX_EVENT_COUNT = 10000
@@ -155,9 +148,11 @@ REMINDER:
 
 
 class EchoBot(PoeBot):
-    async def get_response(self, request: QueryRequest) -> AsyncIterable[ServerSentEvent]:
+    async def get_response(
+        self, request: QueryRequest
+    ) -> AsyncIterable[ServerSentEvent]:
         original_message_id = request.message_id
-        
+
         for query_message in request.query:
             # possible attachment inputs - docx, pdf OR png (enforce one attachment)
             #   Only supporting (one) png for now, until Poe supports sending images without cloudinary
@@ -169,9 +164,7 @@ class EchoBot(PoeBot):
                 query_message.content = " "
             resume_strings = []
 
-            if (
-                query_message.attachments
-            ):
+            if query_message.attachments:
                 for attachment in query_message.attachments:
                     if attachment.content_type.startswith("image/"):
                         print("parsing image", attachment.url)
@@ -212,7 +205,6 @@ class EchoBot(PoeBot):
             else:
                 current_message += msg.text
                 yield self.replace_response_event(current_message)
-
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(

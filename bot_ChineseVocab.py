@@ -263,13 +263,22 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
         # if the submission is already made, continue as per normal
         if conversation_submitted_key in stub.my_dict:
-            format_repeat = "请使用简体中文。" if format == "simplified" else "請使用繁體中文。"
+            format_repeat = (
+                "请使用简体中文。" if format == "simplified" else "請使用繁體中文。"
+            )
 
-            request.query = [
-                ProtocolMessage(role="system", content=FREEFORM_SYSTEM_PROMPT.format(format=format, format_repeat=format_repeat))
-            ] + [
-                ProtocolMessage(role="system", content=format_repeat)
-            ] + request.query
+            request.query = (
+                [
+                    ProtocolMessage(
+                        role="system",
+                        content=FREEFORM_SYSTEM_PROMPT.format(
+                            format=format, format_repeat=format_repeat
+                        ),
+                    )
+                ]
+                + [ProtocolMessage(role="system", content=format_repeat)]
+                + request.query
+            )
             bot_reply = ""
             async for msg in fp.stream_request(request, "ChatGPT", request.access_key):
                 bot_reply += msg.text

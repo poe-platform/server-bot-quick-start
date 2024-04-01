@@ -15,7 +15,6 @@ from typing import AsyncIterable
 
 import fastapi_poe as fp
 import pandas as pd
-import ast
 from fastapi_poe.types import PartialResponse, ProtocolMessage
 from modal import Dict, Image, Stub, asgi_app
 
@@ -116,10 +115,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
         # for new conversations, sample a problem
         if conversation_info_key not in stub.my_dict:
-            question_info = (
-                df.sample(n=1)
-                .to_dict(orient="records")[0]
-            )
+            question_info = df.sample(n=1).to_dict(orient="records")[0]
             stub.my_dict[conversation_info_key] = question_info
 
             yield self.text_event(
@@ -144,7 +140,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
             yield PartialResponse(text=PASS_STATEMENT, is_suggested_reply=True)
             return
-        
+
         # retrieve the previously cached question
         question_info = stub.my_dict[conversation_info_key]
 
@@ -160,7 +156,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
                     option_2=question_info["option_2"],
                     option_3=question_info["option_3"],
                     option_4=question_info["option_4"],
-                )
+                ),
             )
         ] + request.query
         bot_reply = ""
@@ -170,9 +166,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         print(bot_reply)
 
         # generate suggested replies
-        request.query = request.query + [
-            ProtocolMessage(role="bot", content=bot_reply)
-        ]
+        request.query = request.query + [ProtocolMessage(role="bot", content=bot_reply)]
         current_conversation_string = stringify_conversation(request.query)
 
         request.query = [

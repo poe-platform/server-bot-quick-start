@@ -310,8 +310,8 @@ class PythonAgentBot(PoeBot):
 
                 if image_data:
                     attachment_upload_response = await self.post_message_attachment(
-                        os.environ["POE_ACCESS_KEY"],
-                        original_message_id,
+                        access_key=os.environ["POE_ACCESS_KEY"],
+                        message_id=original_message_id,
                         file_data=image_data,
                         filename="image.png",
                         is_inline=True,
