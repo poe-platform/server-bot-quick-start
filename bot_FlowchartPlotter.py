@@ -18,7 +18,12 @@ import uuid
 from typing import AsyncIterable
 
 from fastapi_poe import PoeBot, make_app
-from fastapi_poe.types import PartialResponse, QueryRequest
+from fastapi_poe.types import (
+    PartialResponse,
+    QueryRequest,
+    SettingsRequest,
+    SettingsResponse,
+)
 from modal import Image, Stub, asgi_app
 
 puppeteer_config_json_content = """{
@@ -48,9 +53,9 @@ class EchoBot(PoeBot):
 
         if len(filenames) == 0:
             yield PartialResponse(
-                textwrap.dedent(
+                text=textwrap.dedent(
                     """
-                No mermaid diagrams detected in your last message.
+                No mermaid diagrams were found in your previous message.
 
                 A mermaid diagram will look like
 
@@ -58,9 +63,12 @@ class EchoBot(PoeBot):
                 graph TD
                     A[Client] --> B[Load Balancer]
                 ```
+
+                See examples [here](https://docs.mermaidchart.com/mermaid/intro).
             """
                 )
             )
+            return
 
         for filename in filenames:
             print("filename", filename)
@@ -77,6 +85,11 @@ class EchoBot(PoeBot):
             yield PartialResponse(
                 text=f"\n\n![flowchart][{attachment_upload_response.inline_ref}]\n\n"
             )
+
+    async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
+        return SettingsResponse(
+            introduction_message="This bot will draw [mermaid diagrams](https://docs.mermaidchart.com/mermaid/intro)."
+        )
 
 
 # specific to hosting with modal.com
