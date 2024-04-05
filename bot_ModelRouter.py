@@ -16,17 +16,17 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
     async def get_response(
         self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
-        request.query = [
-            {"role": "system", "content": "Reply in Spanish"}
-        ] + request.query
+        # request.query = [
+        #     {"role": "system", "content": "Reply in Spanish"}
+        # ] + request.query
         async for msg in fp.stream_request(
-            request, "Claude-3-Opus", request.access_key
+            request, "gemini-pro", request.access_key
         ):
             yield msg
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(
-            server_bot_dependencies={"Claude-3-Opus": 1}, allow_attachments=True
+            server_bot_dependencies={"gemini-pro": 1}, allow_attachments=True
         )
 
 

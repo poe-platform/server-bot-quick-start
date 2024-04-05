@@ -19,6 +19,7 @@ from fastapi_poe.types import PartialResponse, ProtocolMessage
 from modal import Dict, Image, Stub, asgi_app
 
 stub = Stub("poe-bot-ChineseVocab")
+my_dict = Dict.from_name("my-dict", create_if_missing=True)
 
 df = pd.read_csv("chinese_words.csv")
 # using https://github.com/krmanik/HSK-3.0-words-list/tree/main/HSK%20List
@@ -150,14 +151,14 @@ tools_dict_list = [
             "parameters": {"type": "object", "properties": {}, "required": []},
         },
     },
-    {
-        "type": "function",
-        "function": {
-            "name": "move_on_to_next_word",
-            "description": "Move on to a different word. Do not invoke if the user still wants to discuss ideas related to the current word.",
-            "parameters": {"type": "object", "properties": {}, "required": []},
-        },
-    },
+    # {
+    #     "type": "function",
+    #     "function": {
+    #         "name": "move_on_to_next_word",
+    #         "description": "Move on to a different word. Do not invoke if the user still wants to discuss ideas related to the current word.",
+    #         "parameters": {"type": "object", "properties": {}, "required": []},
+    #     },
+    # },
     {
         "type": "function",
         "function": {
@@ -232,22 +233,22 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         last_user_reply = request.query[-1].content
         print(last_user_reply)
 
-        def change_to_simplified_chinese():
+        def change_to_simplified_chinese(*args):
             my_dict[user_format_key] = "simplified"
             print(f"Changed to simplified Chinese")
 
-        def change_to_traditional_chinese():
+        def change_to_traditional_chinese(*args):
             my_dict[user_format_key] = "traditional"
             print(f"Changed to traditional Chinese")
 
-        def move_on_to_next_word():
+        def move_on_to_next_word(*args):
             if conversation_info_key in my_dict:
                 my_dict.pop(conversation_info_key)
             if conversation_submitted_key in my_dict:
                 my_dict.pop(conversation_submitted_key)
             print(f"Provided a new word")
 
-        # def change_level(level):
+        # def change_level(level, *args):
         #     my_dict[user_level_key] = level
         #     if conversation_info_key in my_dict:
         #         my_dict.pop(conversation_info_key)
@@ -258,7 +259,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         # tools_executables = [
         #     change_to_simplified_chinese,
         #     change_to_traditional_chinese,
-        #     move_on_to_next_word,
+        #     # move_on_to_next_word,
         #     change_level,
         # ]
 
@@ -272,7 +273,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         #     # We don't want to deliver the bot response
         #     pass
 
-        # function calling is too slow, I reverted to doing string matching
+        # # function calling is too slow, I reverted to doing string matching
         if last_user_reply in SIMPLIFIED_STATEMENT:
             change_to_simplified_chinese()
         if last_user_reply in TRADITIONAL_STATEMENT:
@@ -473,48 +474,6 @@ image = (
     .pip_install(*REQUIREMENTS)
     .copy_local_file("chinese_words.csv", "/root/chinese_words.csv")
 )
-
-my_dict2 = Dict.from_name("my-dict", create_if_missing=True)
-
-
-@stub.function(image=image)
-def dict_setter(key, value):
-    my_dict2[key] = value
-
-
-@stub.function(image=image)
-def dict_getter(key):
-    return my_dict2[key]
-
-
-@stub.function(image=image)
-def dict_contains(key):
-    return key in my_dict2
-
-
-@stub.function(image=image)
-def dict_pop(key):
-    return my_dict2.pop(key)
-
-
-class MyDict:
-    # doing this because my_dict2 isn't hyrdated in the object
-
-    def __setitem__(self, key, value):
-        dict_setter.remote(key, value)
-
-    def __getitem__(self, key):
-        return dict_getter.remote(key)
-
-    def __contains__(self, key):
-        return dict_contains.remote(key)
-
-    def pop(self, key):
-        return dict_pop.remote(key)
-
-
-my_dict = MyDict()
-
 
 @stub.function(image=image)
 @asgi_app()
