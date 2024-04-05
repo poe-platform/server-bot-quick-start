@@ -19,7 +19,6 @@ from fastapi_poe.types import PartialResponse, ProtocolMessage
 from modal import Dict, Image, Stub, asgi_app
 
 stub = Stub("poe-bot-ChineseVocab")
-stub.my_dict = Dict.new()
 
 df = pd.read_csv("chinese_words.csv")
 # using https://github.com/krmanik/HSK-3.0-words-list/tree/main/HSK%20List
@@ -133,6 +132,52 @@ SIMPLIFIED_STATEMENT = "I prefer simplified characters."
 
 SUGGESTED_REPLIES_REGEX = re.compile(r"<a>(.+?)</a>", re.DOTALL)
 
+# https://json-schema.org/understanding-json-schema
+tools_dict_list = [
+    {
+        "type": "function",
+        "function": {
+            "name": "change_to_simplified_chinese",
+            "description": "Change to Simplified Chinese",
+            "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "change_to_traditional_chinese",
+            "description": "Change to Traditional Chinese",
+            "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "provide_new_word",
+            "description": "Provide a new word.",
+            "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "provide_new_word_specific_level",
+            "description": "Provide a new word at a specific level.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "type": "integer",
+                        "description": "The new level that the user will be changed to.",
+                    }
+                },
+                "required": ["level"],
+            },
+        },
+    },
+]
+tools = [fp.ToolDefinition(**tools_dict) for tools_dict in tools_dict_list]
+
 
 def extract_suggested_replies(raw_output: str) -> list[str]:
     suggested_replies = [
@@ -187,48 +232,69 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         last_user_reply = request.query[-1].content
         print(last_user_reply)
 
-        if last_user_reply in TRADITIONAL_STATEMENT:
-            stub.my_dict[user_format_key] = "traditional"
+        def change_to_simplified_chinese():
+            my_dict[user_format_key] = "simplified"
+            print(f"Changed to simplified Chinese")
 
-        if last_user_reply in SIMPLIFIED_STATEMENT:
-            stub.my_dict[user_format_key] = "simplified"
+        def change_to_traditional_chinese():
+            my_dict[user_format_key] = "traditional"
+            print(f"Changed to traditional Chinese")
 
-        if user_format_key in stub.my_dict:
-            format = stub.my_dict[user_format_key]
+        def provide_new_word():
+            if conversation_info_key in my_dict:
+                my_dict.pop(conversation_info_key)
+            if conversation_submitted_key in my_dict:
+                my_dict.pop(conversation_submitted_key)
+            print(f"Provided a new word")
+
+        def provide_new_word_specific_level(level):
+            my_dict[user_level_key] = level
+            if conversation_info_key in my_dict:
+                my_dict.pop(conversation_info_key)
+            if conversation_submitted_key in my_dict:
+                my_dict.pop(conversation_submitted_key)
+            print(f"The user level has been changed to {level}")
+
+        tools_executables = [
+            change_to_simplified_chinese,
+            change_to_traditional_chinese,
+            provide_new_word,
+            provide_new_word_specific_level,
+        ]
+
+        async for msg in fp.stream_request(
+            request,
+            "GPT-3.5-Turbo",
+            request.access_key,
+            tools=tools,
+            tool_executables=tools_executables,
+        ):
+            # We don't want to deliver the bot response
+            pass
+
+        if user_format_key in my_dict:
+            format = my_dict[user_format_key]
         else:
-            stub.my_dict[user_format_key] = "simplified"
-            format = stub.my_dict[user_format_key]
-
-        print(format)
-
-        # reset if the user passes or asks for the next statement
-        if last_user_reply in (NEXT_STATEMENT, PASS_STATEMENT):
-            if conversation_info_key in stub.my_dict:
-                stub.my_dict.pop(conversation_info_key)
-            if conversation_submitted_key in stub.my_dict:
-                stub.my_dict.pop(conversation_submitted_key)
+            my_dict[user_format_key] = "simplified"
+            format = my_dict[user_format_key]
 
         # retrieve the level of the user
-        # TODO(when conversation starter is ready): jump to a specific level
-        if last_user_reply in "1234567":
-            level = int(last_user_reply)
-            stub.my_dict[user_level_key] = level
-        elif user_level_key in stub.my_dict:
-            level = stub.my_dict[user_level_key]
+        if user_level_key in my_dict:
+            level = my_dict[user_level_key]
             level = max(1, level)
             level = min(7, level)
         else:
             level = 1
-            stub.my_dict[user_level_key] = level
+            my_dict[user_level_key] = level
 
         # for new conversations, sample a problem
-        if conversation_info_key not in stub.my_dict:
+        if conversation_info_key not in my_dict:
             word_info = (
                 df[(df["level"] == level) & (df["exclude"] == False)]
                 .sample(n=1)
                 .to_dict(orient="records")[0]
             )
-            stub.my_dict[conversation_info_key] = word_info
+            my_dict[conversation_info_key] = word_info
             yield self.text_event(
                 TEMPLATE_STARTING_REPLY.format(
                     word=word_info[format], level=word_info["level"]
@@ -249,7 +315,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             return
 
         # retrieve the previously cached word
-        word_info = stub.my_dict[conversation_info_key]
+        word_info = my_dict[conversation_info_key]
         word = word_info[format]  # so that this can be used in f-string
 
         if last_user_reply in (TRADITIONAL_STATEMENT, SIMPLIFIED_STATEMENT):
@@ -262,7 +328,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             return
 
         # if the submission is already made, continue as per normal
-        if conversation_submitted_key in stub.my_dict:
+        if conversation_submitted_key in my_dict:
             format_repeat = (
                 "请使用简体中文。" if format == "simplified" else "請使用繁體中文。"
             )
@@ -341,7 +407,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
         # make a judgement on correctness
         if "-----" in bot_reply:
-            stub.my_dict[conversation_submitted_key] = True
+            my_dict[conversation_submitted_key] = True
             request.query = [
                 {
                     "role": "user",
@@ -368,11 +434,11 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
                 and "meaning is correct" in judge_reply
                 and word_info["numerical_pinyin"] in last_user_reply
             ):
-                stub.my_dict[user_level_key] = level + 1
+                my_dict[user_level_key] = level + 1
             elif (
                 judge_reply.count(" correct") == 0
             ):  # NB: note the space otherwise it matches incorrect
-                stub.my_dict[user_level_key] = level - 1
+                my_dict[user_level_key] = level - 1
 
             # deliver suggested replies
             yield PartialResponse(
@@ -388,17 +454,58 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(
-            server_bot_dependencies={"ChatGPT": 1, "GPT-3.5-Turbo": 1},
+            server_bot_dependencies={"ChatGPT": 3, "GPT-3.5-Turbo": 1},
             introduction_message="Say 'start' to get the Chinese word.",
         )
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.24", "pandas"]
+REQUIREMENTS = ["fastapi-poe==0.0.37", "pandas"]
 image = (
     Image.debian_slim()
     .pip_install(*REQUIREMENTS)
     .copy_local_file("chinese_words.csv", "/root/chinese_words.csv")
 )
+
+my_dict2 = Dict.from_name("my-dict", create_if_missing=True)
+
+
+@stub.function(image=image)
+def dict_setter(key, value):
+    my_dict2[key] = value
+
+
+@stub.function(image=image)
+def dict_getter(key):
+    return my_dict2[key]
+
+
+@stub.function(image=image)
+def dict_contains(key):
+    return key in my_dict2
+
+
+@stub.function(image=image)
+def dict_pop(key):
+    return my_dict2.pop(key)
+
+
+class MyDict:
+    # doing this because my_dict2 isn't hyrdated in the object
+
+    def __setitem__(self, key, value):
+        dict_setter.remote(key, value)
+
+    def __getitem__(self, key):
+        return dict_getter.remote(key)
+
+    def __contains__(self, key):
+        return dict_contains.remote(key)
+
+    def pop(self, key):
+        return dict_pop.remote(key)
+
+
+my_dict = MyDict()
 
 
 @stub.function(image=image)
