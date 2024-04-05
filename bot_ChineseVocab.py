@@ -153,16 +153,16 @@ tools_dict_list = [
     {
         "type": "function",
         "function": {
-            "name": "provide_new_word",
-            "description": "Provide a new word.",
+            "name": "move_on_to_next_word",
+            "description": "Move on to a different word. Do not invoke if the user still wants to discuss ideas related to the current word.",
             "parameters": {"type": "object", "properties": {}, "required": []},
         },
     },
     {
         "type": "function",
         "function": {
-            "name": "provide_new_word_specific_level",
-            "description": "Provide a new word at a specific level.",
+            "name": "change_level",
+            "description": "Change to the level specified by the user.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -240,37 +240,45 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             my_dict[user_format_key] = "traditional"
             print(f"Changed to traditional Chinese")
 
-        def provide_new_word():
+        def move_on_to_next_word():
             if conversation_info_key in my_dict:
                 my_dict.pop(conversation_info_key)
             if conversation_submitted_key in my_dict:
                 my_dict.pop(conversation_submitted_key)
             print(f"Provided a new word")
 
-        def provide_new_word_specific_level(level):
-            my_dict[user_level_key] = level
-            if conversation_info_key in my_dict:
-                my_dict.pop(conversation_info_key)
-            if conversation_submitted_key in my_dict:
-                my_dict.pop(conversation_submitted_key)
-            print(f"The user level has been changed to {level}")
+        # def change_level(level):
+        #     my_dict[user_level_key] = level
+        #     if conversation_info_key in my_dict:
+        #         my_dict.pop(conversation_info_key)
+        #     if conversation_submitted_key in my_dict:
+        #         my_dict.pop(conversation_submitted_key)
+        #     print(f"The user level has been changed to {level}")
 
-        tools_executables = [
-            change_to_simplified_chinese,
-            change_to_traditional_chinese,
-            provide_new_word,
-            provide_new_word_specific_level,
-        ]
+        # tools_executables = [
+        #     change_to_simplified_chinese,
+        #     change_to_traditional_chinese,
+        #     move_on_to_next_word,
+        #     change_level,
+        # ]
 
-        async for msg in fp.stream_request(
-            request,
-            "GPT-3.5-Turbo",
-            request.access_key,
-            tools=tools,
-            tool_executables=tools_executables,
-        ):
-            # We don't want to deliver the bot response
-            pass
+        # async for msg in fp.stream_request(
+        #     request,
+        #     "GPT-3.5-Turbo",
+        #     request.access_key,
+        #     tools=tools,
+        #     tool_executables=tools_executables,
+        # ):
+        #     # We don't want to deliver the bot response
+        #     pass
+
+        # function calling is too slow, I reverted to doing string matching
+        if last_user_reply in SIMPLIFIED_STATEMENT:
+            change_to_simplified_chinese()
+        if last_user_reply in TRADITIONAL_STATEMENT:
+            change_to_traditional_chinese()
+        if last_user_reply in (NEXT_STATEMENT, PASS_STATEMENT):
+            move_on_to_next_word()
 
         if user_format_key in my_dict:
             format = my_dict[user_format_key]
