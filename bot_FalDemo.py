@@ -6,25 +6,20 @@ BOT_NAME="FalDemo"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X PO
 
 from __future__ import annotations
 
+import os
 from typing import AsyncIterable
 
+import fal_client
 import fastapi_poe as fp
-import requests
-import os
 from fastapi_poe import PartialResponse
 from modal import Image, Stub, asgi_app
 
 
 class GPT35TurboAllCapsBot(fp.PoeBot):
-    headers = {
-        "Authorization": f"Key {os.environ['FAL_KEY']}",
-        "Content-Type": "application/json"
-    }
-
     async def get_response(
         self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
-    
+
         last_message = request.query[-1].content
 
         image_url = None
@@ -32,51 +27,41 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             for attachment in query.attachments:
                 if attachment.content_type.startswith("image"):
                     image_url = attachment.url
-        
-        headers = {
-            "Authorization": f"Key {os.environ['FAL_KEY']}",
-            "Content-Type": "application/json"
-        }
 
         if image_url is not None:
-            url = "https://fal.run/fal-ai/sd15-depth-controlnet"
-            data = {
-                "control_image_url": image_url,
-                "prompt": last_message,
-            }
-            response = requests.post(url, headers=headers, json=data)
+            response = fal_client.run(
+                "fal-ai/sd15-depth-controlnet",
+                arguments={"control_image_url": image_url, "prompt": last_message},
+            )
         else:
-            url = "https://fal.run/fal-ai/fast-lightning-sdxl"
-            data = {
-                "prompt": last_message,
-            }
-            response = requests.post(url, headers=headers, json=data)
-
-        response_json = response.json()
-
-        for image in response_json["images"]:
-            attachment_upload_response = await self.post_message_attachment(
-                message_id=request.message_id,
-                download_url=image["url"],
-                is_inline=True,
-            )
-            print("inline_ref", attachment_upload_response.inline_ref)
-            yield PartialResponse(
-                text=f"\n\n![plot][{attachment_upload_response.inline_ref}]\n\n"
+            response = fal_client.run(
+                "fal-ai/fast-lightning-sdxl", arguments={"prompt": last_message}
             )
 
-    async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
-        return fp.SettingsResponse(
-            server_bot_dependencies={}, allow_attachments=True
+        image_url = response["images"][0]["url"]
+
+        attachment_upload_response = await self.post_message_attachment(
+            message_id=request.message_id, download_url=image_url, is_inline=True
+        )
+        print("inline_ref", attachment_upload_response.inline_ref)
+        yield PartialResponse(
+            text=f"\n\n![plot][{attachment_upload_response.inline_ref}]\n\n"
         )
 
+    async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
+        return fp.SettingsResponse(server_bot_dependencies={}, allow_attachments=True)
 
-REQUIREMENTS = ["fastapi-poe==0.0.34", "fal"]
-image = Image.debian_slim().pip_install(*REQUIREMENTS).env(
-    {
-        "FAL_KEY": os.environ["FAL_KEY"],
-        "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
-    }
+
+REQUIREMENTS = ["fastapi-poe==0.0.34", "fal_client"]
+image = (
+    Image.debian_slim()
+    .pip_install(*REQUIREMENTS)
+    .env(
+        {
+            "FAL_KEY": os.environ["FAL_KEY"],
+            "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
+        }
+    )
 )
 
 stub = Stub("turbo-allcaps-poe")
