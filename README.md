@@ -21,7 +21,7 @@ A correct implementation would look like https://poe.com/EchoBotDemonstration
   `modal deploy turbo_allcapsbot.py`.
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
-  [here](https://creator.poe.com/docs/updating-bot-settings).
+  [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
 
 A correct implementation would look like https://poe.com/AllCapsBotDemo
 
@@ -44,7 +44,7 @@ A correct implementation would look like https://poe.com/ImageResponseBotDemo
 - A bot that demonstrates how to enable file upload for the users of your bot.
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
-  [here](https://creator.poe.com/docs/updating-bot-settings).
+  [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
 - To deploy, run `modal deploy pdf_counter_bot.py`
 
 A correct implementation would look like https://poe.com/PDFCounterBotDemo
@@ -62,7 +62,7 @@ A correct implementation would look like https://poe.com/PDFCounterBotDemo
 - A bot that demonstrates how to use the Poe API for function calling.
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
-  [here](https://creator.poe.com/docs/updating-bot-settings).
+  [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
 - To deploy, run `modal deploy function_calling_bot.py`
 
 ### HttpRequestBot
@@ -86,6 +86,6 @@ OpenAI key. To deploy, run `modal deploy langchain_openai.py`
   comparing two different bots. To deploy, run `modal deploy turbo_vs_claude.py`
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
-  [here](https://creator.poe.com/docs/updating-bot-settings).
+  [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
 
 A correct implementation would look like https://poe.com/TurboVsClaudeBotDemo
