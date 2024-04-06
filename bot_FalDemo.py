@@ -52,7 +52,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         return fp.SettingsResponse(server_bot_dependencies={}, allow_attachments=True)
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.34", "fal_client"]
+REQUIREMENTS = ["fastapi-poe==0.0.34", "fal_client==0.2.1"]
 image = (
     Image.debian_slim()
     .pip_install(*REQUIREMENTS)

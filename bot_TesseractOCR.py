@@ -222,6 +222,12 @@ class EchoBot(PoeBot):
             content_url = query.query[-1].attachments[0].url
             print("parsing docx", content_url)
             success, resume_string = await parse_pdf_document_from_docx(content_url)
+        elif query.query[-1].attachments and query.query[-1].attachments[
+            0
+        ].content_type.startswith("image"):
+            content_url = query.query[-1].attachments[0].url
+            print("parsing image", content_url)
+            success, resume_string = await parse_image_document_from_url(content_url)
 
         # TODO: parse other types of documents
 
@@ -234,7 +240,7 @@ class EchoBot(PoeBot):
             content_url = user_statement.strip()
             content_url = content_url.split("?")[0]  # remove query_params
 
-            yield self.text_event(UPDATE_IMAGE_PARSING)
+            # yield self.text_event(UPDATE_IMAGE_PARSING)
 
             if content_url.endswith(".pdf"):
                 print("parsing pdf", content_url)
