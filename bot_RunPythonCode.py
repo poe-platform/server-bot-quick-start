@@ -8,6 +8,7 @@ assert False
 """
 
 import os
+import re
 from typing import AsyncIterable
 
 import fastapi_poe.client
@@ -37,13 +38,13 @@ def format_output(captured_output, captured_error="") -> str:
     return "\n".join(lines)
 
 
-def strip_code(code):
-    if len(code.strip()) < 6:
+def extract_code(reply):
+    pattern = r"```python([\s\S]*?)```"
+    matches = re.findall(pattern, reply)
+    code = "\n\n".join(matches)
+    if code:
         return code
-    code = code.strip()
-    if code.startswith("```") and code.endswith("```"):
-        code = code[3:-3]
-    return code
+    return reply
 
 
 class EchoBot(PoeBot):
@@ -51,7 +52,7 @@ class EchoBot(PoeBot):
         print("user_statement")
         print(query.query[-1].content)
         code = query.query[-1].content
-        code = strip_code(code)
+        code = extract_code(code)
         try:
             f = modal.Function.lookup("run-python-code-shared", "execute_code")
             captured_output = f.remote(code)  # need async await?

@@ -11,6 +11,7 @@ cat a.txt
 from __future__ import annotations
 
 import os
+import re
 from typing import AsyncIterable
 
 import modal
@@ -19,36 +20,47 @@ from fastapi_poe.types import PartialResponse, QueryRequest
 from modal import Image, Stub, asgi_app
 
 
+def extract_codes(reply):
+    pattern = r"```([\s\S]*?)```"
+    matches = re.findall(pattern, reply)
+    if matches:
+        return matches
+    return [reply]
+
+
 class EchoBot(PoeBot):
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[PartialResponse]:
         last_message = request.query[-1].content
-        stub.nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
-        sb = stub.spawn_sandbox(
-            "bash",
-            "-c",
-            f"cd /cache && {last_message}",
-            network_file_systems={"/cache": stub.nfs},
-        )
-        sb.wait()
+        commands = extract_codes(last_message)
 
-        output = sb.stdout.read()
-        error = sb.stderr.read()
+        for command in commands:
+            stub.nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
+            sb = stub.spawn_sandbox(
+                "bash",
+                "-c",
+                f"cd /cache && {command}",
+                network_file_systems={"/cache": stub.nfs},
+            )
+            sb.wait()
 
-        nothing_returned = True
+            output = sb.stdout.read()
+            error = sb.stderr.read()
 
-        if output:
-            yield PartialResponse(text=f"""```output\n{output}\n```""")
-            nothing_returned = False
-        if output and error:
-            yield PartialResponse(text="""\n\n""")
-        if error:
-            yield PartialResponse(text=f"""```error\n{error}\n```""")
-            nothing_returned = False
+            nothing_returned = True
 
-        if nothing_returned:
-            yield PartialResponse(text="""No output or error returned.""")
+            if output:
+                yield PartialResponse(text=f"""```output\n{output}\n```\n""")
+                nothing_returned = False
+            if output and error:
+                yield PartialResponse(text="""\n\n""")
+            if error:
+                yield PartialResponse(text=f"""```error\n{error}\n```\n""")
+                nothing_returned = False
+
+            if nothing_returned:
+                yield PartialResponse(text="""No output or error returned.""")
 
 
 # specific to hosting with modal.com

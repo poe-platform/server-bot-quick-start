@@ -475,6 +475,7 @@ image = (
     .copy_local_file("chinese_words.csv", "/root/chinese_words.csv")
 )
 
+
 @stub.function(image=image)
 @asgi_app()
 def fastapi_app():
