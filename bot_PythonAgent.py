@@ -179,6 +179,9 @@ class PythonAgentBot(PoeBot):
         request.logit_bias = self.logit_bias
         request.temperature = 0.1  # does this work?
 
+        for query in request.query:
+            query.message_id = ""
+
         # procedure to create volume if it does not exist
         # tried other ways to write a code but has hydration issues
         try:
