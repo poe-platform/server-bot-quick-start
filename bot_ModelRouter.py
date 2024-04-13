@@ -19,7 +19,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         # request.query = [
         #     {"role": "system", "content": "Reply in Spanish"}
         # ] + request.query
-        async for msg in fp.stream_request(request, "GPT-4", request.access_key):
+        async for msg in fp.stream_request(request, "gemini-pro", request.access_key):
             yield msg
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
