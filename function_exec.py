@@ -57,7 +57,7 @@ image = Image.debian_slim().pip_install(
 stub = Stub("poe-bot-quickstart")
 
 
-@stub.function(image=image, timeout=30)
+@stub.function(image=image, timeout=30, container_idle_timeout=1200)
 def execute_code(code):
     import traitlets.config
     from IPython.terminal.embed import InteractiveShellEmbed
