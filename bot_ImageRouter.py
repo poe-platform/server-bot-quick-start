@@ -32,7 +32,7 @@ image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("turbo-allcaps-poe")
 
 
-@stub.function(image=image)
+@stub.function(image=image, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurboAllCapsBot()

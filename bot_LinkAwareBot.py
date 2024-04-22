@@ -167,7 +167,7 @@ image = (
 stub = Stub("poe-bot-quickstart")
 
 
-@stub.function(image=image)
+@stub.function(image=image, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, allow_without_key=True)

@@ -239,30 +239,15 @@ plt.savefig = save_image('image.png')(plt.savefig)
 
 bot_PythonAgent.SIMULATED_USER_SUFFIX_PROMPT = """
 If there is an issue, you will fix the Python code.
-Otherwise, provide a brief and concise comment, WITHOUT repeating the output.
+Otherwise, provide a brief and concise summary, WITHOUT repeating the output.
+Write in normal markdown.
 """
 
 
 bot = PythonAgentBot()
-bot.prompt_bot = "ChatGPT"
+bot.prompt_bot = "Claude-3-Sonnet"
 bot.code_iteration_limit = 3
-bot.logit_bias = {
-    "21362": -10,  # "!["
-    "4380": 2,  # ("/
-    "3478": 2,  # ('/
-    "446": -2,  # ("
-    "493": -2,  # ('
-    "19701": -15,  # Sorry
-    "10835": -5,  # Ap(ologies)
-    "5159": -2,  # My (apologies, but I'm)
-    "2170": -5,  # As (an AI language model)
-    "31140": -10,  # Unfortunately
-    "19173": -10,  # ' Unfortunately'
-    "40": -10,  # I('m sorry)
-    "663": -3,  # ']
-    "7352": 2,  # '].
-    "1473": 1,  # ':\n\n'
-}
+bot.logit_bias = {}
 bot.allow_attachments = False
 
 
@@ -275,7 +260,7 @@ bot_PythonAgent.image_exec = bot_PythonAgent.image_exec.copy_local_file(
 )
 
 
-@stub.function(image=image_bot)
+@stub.function(image=image_bot, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])

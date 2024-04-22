@@ -22,7 +22,7 @@ bot.iteration_count = 10
 stub = Stub("poe-bot-quickstart")
 
 
-@stub.function(image=image_bot)
+@stub.function(image=image_bot, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])

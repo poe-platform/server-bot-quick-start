@@ -88,7 +88,7 @@ bot = EchoBot()
 
 image = (
     Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.23", "trino")
+    .pip_install("fastapi-poe==0.0.37", "trino")
     .env(
         {
             "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
@@ -102,7 +102,7 @@ image = (
 stub = Stub("poe-bot-quickstart")
 
 
-@stub.function(image=image)
+@stub.function(image=image, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
