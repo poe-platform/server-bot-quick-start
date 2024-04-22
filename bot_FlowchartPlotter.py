@@ -13,11 +13,10 @@ from __future__ import annotations
 import glob
 import os
 import subprocess
-import textwrap
 import uuid
 from typing import AsyncIterable
 
-from fastapi_poe import PoeBot, make_app
+from fastapi_poe import MetaResponse, PoeBot, make_app
 from fastapi_poe.types import (
     PartialResponse,
     QueryRequest,
@@ -31,12 +30,62 @@ puppeteer_config_json_content = """{
 }
 """
 
+INTRODUCTION_MESSAGE = """
+This bot will draw [mermaid diagrams](https://docs.mermaidchart.com/mermaid/intro).
+
+A mermaid diagram will look like this
+
+````
+```mermaid
+graph TD
+    A[Client] --> B[Load Balancer]
+```
+````
+
+Try copying the above, paste it, and reply.
+""".strip()
+
+
+RESPONSE_MERMAID_DIAGRAM_MISSING = """
+No mermaid diagrams were found in your previous message.
+
+A mermaid diagram will look like
+
+````
+```mermaid
+graph TD
+    A[Client] --> B[Load Balancer]
+```
+````
+
+See examples [here](https://docs.mermaidchart.com/mermaid/intro).
+""".strip()
+
 
 class EchoBot(PoeBot):
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[PartialResponse]:
-        last_message = request.query[-1].content
+
+        # disable suggested replies
+        yield MetaResponse(
+            text="",
+            content_type="text/markdown",
+            linkify=True,
+            refetch_settings=False,
+            suggested_replies=False,
+        )
+
+        while request.query:
+            last_message = request.query[-1].content
+            print(last_message)
+            if "```mermaid" in last_message:
+                break
+            request.query.pop()
+            if len(request.query) == 0:
+                yield PartialResponse(text=RESPONSE_MERMAID_DIAGRAM_MISSING)
+                return
+
         random_uuid = uuid.uuid4()
 
         with open("puppeteer-config.json", "w") as f:
@@ -47,26 +96,15 @@ class EchoBot(PoeBot):
 
         # svg is not supported
         command = f"mmdc -p puppeteer-config.json -i {random_uuid}.md -o {random_uuid}-output.png"
+        yield PartialResponse(text="Drawing ...")
+
         _ = subprocess.check_output(command, shell=True, text=True)
 
         filenames = list(glob.glob(f"{random_uuid}-output-*.png"))
 
         if len(filenames) == 0:
             yield PartialResponse(
-                text=textwrap.dedent(
-                    """
-                No mermaid diagrams were found in your previous message.
-
-                A mermaid diagram will look like
-
-                ```mermaid
-                graph TD
-                    A[Client] --> B[Load Balancer]
-                ```
-
-                See examples [here](https://docs.mermaidchart.com/mermaid/intro).
-            """
-                )
+                text=RESPONSE_MERMAID_DIAGRAM_MISSING, is_replace_response=True
             )
             return
 
@@ -76,19 +114,19 @@ class EchoBot(PoeBot):
                 file_data = f.read()
 
             attachment_upload_response = await self.post_message_attachment(
-                access_key=os.environ["POE_ACCESS_KEY"],
                 message_id=request.message_id,
                 file_data=file_data,
                 filename=filename,
                 is_inline=True,
             )
             yield PartialResponse(
-                text=f"\n\n![flowchart][{attachment_upload_response.inline_ref}]\n\n"
+                text=f"\n\n![flowchart][{attachment_upload_response.inline_ref}]\n\n",
+                is_replace_response=True,
             )
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            introduction_message="This bot will draw [mermaid diagrams](https://docs.mermaidchart.com/mermaid/intro)."
+            introduction_message=INTRODUCTION_MESSAGE
         )
 
 
@@ -138,16 +176,16 @@ image = (
     .apt_install("nodejs")
     .run_commands("npm install -g @mermaid-js/mermaid-cli")
     # fastapi_poe requirements
-    .pip_install("fastapi-poe==0.0.32")
+    .pip_install("fastapi-poe==0.0.37")
     .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
 )
 
-stub = Stub("poe-bot-quickstart")
+stub = Stub("poe-bot-FlowChartPlotter")
 
 bot = EchoBot()
 
 
-@stub.function(image=image)
+@stub.function(image=image, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])

@@ -1,5 +1,6 @@
 """
 
+NOTE: no longer deployed
 BOT_NAME="GPT-4-128k-mirror"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
 
 Test message:
@@ -224,7 +225,7 @@ class EchoBot(PoeBot):
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            server_bot_dependencies={"GPT-4": 1},
+            server_bot_dependencies={"GPT-4-128k": 1},
             allow_attachments=True,
             introduction_message="",
         )

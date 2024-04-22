@@ -68,7 +68,7 @@ You can debug by printing variables in the method.
 bot_PythonAgent.SIMULATED_USER_SUFFIX_PROMPT = ""
 
 bot = PythonAgentBot()
-bot.prompt_bot = "Claude-3-Opus"
+bot.prompt_bot = "GPT-4-128k"
 bot.code_iteration_limit = 10
 bot.system_prompt_role = "user"
 
