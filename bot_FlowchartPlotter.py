@@ -125,9 +125,7 @@ class EchoBot(PoeBot):
             )
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
-        return SettingsResponse(
-            introduction_message=INTRODUCTION_MESSAGE
-        )
+        return SettingsResponse(introduction_message=INTRODUCTION_MESSAGE)
 
 
 # specific to hosting with modal.com

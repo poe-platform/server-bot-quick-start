@@ -13,7 +13,7 @@ from typing import AsyncIterable
 
 import fastapi_poe.client
 import modal
-from fastapi_poe import PoeBot, make_app, MetaResponse
+from fastapi_poe import MetaResponse, PoeBot, make_app
 from fastapi_poe.types import QueryRequest, SettingsRequest, SettingsResponse
 from modal import Image, Stub, asgi_app
 from sse_starlette.sse import ServerSentEvent
@@ -74,7 +74,9 @@ def extract_code(reply):
 
 
 class EchoBot(PoeBot):
-    async def get_response(self, request: QueryRequest) -> AsyncIterable[ServerSentEvent]:
+    async def get_response(
+        self, request: QueryRequest
+    ) -> AsyncIterable[ServerSentEvent]:
 
         # disable suggested replies
         yield MetaResponse(
@@ -84,13 +86,13 @@ class EchoBot(PoeBot):
             refetch_settings=False,
             suggested_replies=False,
         )
-        
+
         while request.query:
             code = request.query[-1].content
             if """```python""" in code:
                 break
             request.query.pop()
-    
+
         if len(request.query) == 0:
             yield self.text_event(RESPONSE_PYTHON_CODE_MISSING)
             return

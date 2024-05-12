@@ -16,10 +16,10 @@ from typing import AsyncIterable
 
 import fastapi_poe as fp
 from fastapi_poe.types import PartialResponse
-from modal import Dict, Image, Stub, asgi_app
+from modal import App, Dict, Image, asgi_app
 
-stub = Stub("poe-bot-ChineseStatement")
-stub.my_dict = Dict.new()
+app = App("poe-bot-ChineseStatement")
+my_dict = Dict.from_name("dict-ChineseStatement", create_if_missing=True)
 
 with open("chinese_sentences.txt") as f:
     srr = f.readlines()
@@ -124,31 +124,31 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
         # reset if the user passes or asks for the next statement
         if last_user_reply in (NEXT_STATEMENT, PASS_STATEMENT):
-            if conversation_info_key in stub.my_dict:
-                stub.my_dict.pop(conversation_info_key)
-            if conversation_submitted_key in stub.my_dict:
-                stub.my_dict.pop(conversation_submitted_key)
+            if conversation_info_key in my_dict:
+                my_dict.pop(conversation_info_key)
+            if conversation_submitted_key in my_dict:
+                my_dict.pop(conversation_submitted_key)
 
         # retrieve the level of the user
         # TODO(when conversation starter is ready): jump to a specific level
         if last_user_reply in "1234567":
             level = int(last_user_reply)
-            stub.my_dict[user_level_key] = level
-        elif user_level_key in stub.my_dict:
-            level = stub.my_dict[user_level_key]
+            my_dict[user_level_key] = level
+        elif user_level_key in my_dict:
+            level = my_dict[user_level_key]
             level = max(1, level)
             level = min(7, level)
         else:
             level = 1
-            stub.my_dict[user_level_key] = level
+            my_dict[user_level_key] = level
 
         # for new conversations, sample a problem
-        if conversation_info_key not in stub.my_dict:
+        if conversation_info_key not in my_dict:
             statement, context = random.choice(
                 level_to_statements_and_context[level - 1]  # leveling is one indexed
             )
             statement_info = {"statement": statement, "context": context}
-            stub.my_dict[conversation_info_key] = statement_info
+            my_dict[conversation_info_key] = statement_info
             yield self.text_event(
                 TEMPLATE_STARTING_REPLY.format(
                     statement=statement_info["statement"], level=level
@@ -158,11 +158,11 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             return
 
         # retrieve the previously cached word
-        statement_info = stub.my_dict[conversation_info_key]
+        statement_info = my_dict[conversation_info_key]
         statement = statement_info["statement"]  # so that this can be used in f-string
 
         # if the submission is already made, continue as per normal
-        if conversation_submitted_key in stub.my_dict:
+        if conversation_submitted_key in my_dict:
             request.query = [
                 {
                     "role": "system",
@@ -202,11 +202,11 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             yield msg.model_copy()
 
         # make a judgement on correctness
-        stub.my_dict[conversation_submitted_key] = True
+        my_dict[conversation_submitted_key] = True
         if "has captured the full meaning" in bot_reply:
-            stub.my_dict[user_level_key] = level + 1
+            my_dict[user_level_key] = level + 1
         else:
-            stub.my_dict[user_level_key] = level - 1
+            my_dict[user_level_key] = level - 1
 
         # deliver suggsted replies
         yield PartialResponse(
@@ -230,7 +230,7 @@ image = (
 )
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurboAllCapsBot()

@@ -16,9 +16,9 @@ from typing import AsyncIterable
 import fastapi_poe as fp
 import pandas as pd
 from fastapi_poe.types import PartialResponse, ProtocolMessage
-from modal import Dict, Image, Stub, asgi_app
+from modal import App, Dict, Image, asgi_app
 
-stub = Stub("poe-bot-ChineseVocab")
+app = App("poe-bot-ChineseVocab")
 my_dict = Dict.from_name("my-dict", create_if_missing=True)
 
 df = pd.read_csv("chinese_words.csv")
@@ -476,7 +476,7 @@ image = (
 )
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurboAllCapsBot()
