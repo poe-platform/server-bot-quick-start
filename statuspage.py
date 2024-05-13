@@ -13,10 +13,11 @@ import fastapi_poe.client as fp
 import fastapi_poe.types as fp_types
 import modal
 import requests
-from modal import Image, App
+from modal import App, Image
 
 RETRY_COUNT = 5
-DELAY_SECONDS = 60
+DELAY_SECONDS = 6
+DELAY_SECONDS_ON_RATE_LIMIT = 60
 
 
 async def get_bot_response(bot_name, messages):
@@ -80,6 +81,8 @@ def test_bot(
             print(f"Response:\n{response}")
         except Exception as e:
             print(str(e))
+            if "BotError" in (str(e)):
+                time.sleep(DELAY_SECONDS_ON_RATE_LIMIT)
 
         if response is None:
             description = f"Did not receive response at {get_utc_timestring()} UTC"
@@ -120,8 +123,8 @@ image = (
 app = App()
 
 
-@app.function(image=image, schedule=modal.Period(minutes=1))
-def update_statuspage_minutely():
+@app.function(image=image, schedule=modal.Period(minutes=2))
+def update_statuspage_two_minutely():
     BOT_NAME_TO_COMPONENT_ID = {}
     for component in get_components().json():
         BOT_NAME_TO_COMPONENT_ID[component["name"]] = component["id"]

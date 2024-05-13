@@ -373,7 +373,9 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
                 ),
             ]
             response_text = ""
-            async for msg in fp.stream_request(request, "Claude-3-Haiku", request.access_key):
+            async for msg in fp.stream_request(
+                request, "Claude-3-Haiku", request.access_key
+            ):
                 response_text += msg.text
             print("suggested_reply", response_text)
 
@@ -408,7 +410,9 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         request.logit_bias = {"2746": -5, "36821": -10}  # "If"  # " |\n\n"
 
         bot_reply = ""
-        async for msg in fp.stream_request(request, "Llama-3-8b-Groq", request.access_key):
+        async for msg in fp.stream_request(
+            request, "Llama-3-8b-Groq", request.access_key
+        ):
             bot_reply += msg.text
             yield msg.model_copy()
 
@@ -458,7 +462,11 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(
-            server_bot_dependencies={"Llama-3-8b-Groq": 3, "Claude-3-Haiku": 1, "ChatGPT": 1},
+            server_bot_dependencies={
+                "Llama-3-8b-Groq": 3,
+                "Claude-3-Haiku": 1,
+                "ChatGPT": 1,
+            },
             introduction_message="Say 'start' to get the Chinese word.",
         )
 
