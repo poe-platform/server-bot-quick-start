@@ -13,10 +13,10 @@ import fastapi_poe.client as fp
 import fastapi_poe.types as fp_types
 import modal
 import requests
-from modal import Image, Stub
+from modal import Image, App
 
-RETRY_COUNT = 2
-DELAY_SECONDS = 10
+RETRY_COUNT = 5
+DELAY_SECONDS = 60
 
 
 async def get_bot_response(bot_name, messages):
@@ -117,10 +117,10 @@ image = (
     )
 )
 
-stub = Stub()
+app = App()
 
 
-@stub.function(image=image, schedule=modal.Period(minutes=1))
+@app.function(image=image, schedule=modal.Period(minutes=1))
 def update_statuspage_minutely():
     BOT_NAME_TO_COMPONENT_ID = {}
     for component in get_components().json():
@@ -141,7 +141,7 @@ def update_statuspage_minutely():
     )
 
 
-@stub.function(image=image, schedule=modal.Period(minutes=10))
+@app.function(image=image, schedule=modal.Period(minutes=10))
 def update_statuspage_ten_minutely():
     BOT_NAME_TO_COMPONENT_ID = {}
     for component in get_components().json():
@@ -205,7 +205,7 @@ def update_statuspage_ten_minutely():
     # )
 
 
-@stub.function(image=image, schedule=modal.Period(hours=1))
+@app.function(image=image, schedule=modal.Period(hours=1))
 def update_statuspage_hourly():
     BOT_NAME_TO_COMPONENT_ID = {}
     for component in get_components().json():
@@ -226,7 +226,7 @@ def update_statuspage_hourly():
     )
 
 
-@stub.function(image=image, schedule=modal.Period(days=1))
+@app.function(image=image, schedule=modal.Period(days=1))
 def update_statuspage_daily():
     BOT_NAME_TO_COMPONENT_ID = {}
     for component in get_components().json():
