@@ -1,6 +1,6 @@
 """
 
-NOTE: no longer deployed
+NOTE: no longer deployed, please use official GPT-4 bots
 BOT_NAME="GPT-4-128k-mirror"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
 
 Test message:

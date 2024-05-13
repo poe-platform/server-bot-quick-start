@@ -9,7 +9,7 @@ import os
 import time
 from datetime import datetime
 
-import fastapi_poe.client as fp_client
+import fastapi_poe.client as fp
 import fastapi_poe.types as fp_types
 import modal
 import requests
@@ -21,7 +21,10 @@ DELAY_SECONDS = 10
 
 async def get_bot_response(bot_name, messages):
     response = ""
-    async for partial in fp_client.get_bot_response(
+    print(messages)
+    print(bot_name)
+    print(os.environ["POE_API_KEY"])
+    async for partial in fp.get_bot_response(
         messages=messages, bot_name=bot_name, api_key=os.environ["POE_API_KEY"]
     ):
         response += partial.text
@@ -104,7 +107,7 @@ def test_bot(
 
 image = (
     Image.debian_slim()
-    .pip_install("requests", "fastapi-poe")
+    .pip_install("requests", "fastapi-poe==0.0.43")
     .env(
         {
             "STATUSPAGE_PAGE_ID": os.environ["STATUSPAGE_PAGE_ID"],
@@ -233,13 +236,6 @@ def update_statuspage_daily():
         bot_name="CafeMaid",
         user_message="I want coffee",
         expected_reply_substring="![",
-        bot_name_to_compoenent_id=BOT_NAME_TO_COMPONENT_ID,
-    )
-
-    test_bot(
-        bot_name="GPT-4-128k-mirror",
-        user_message="What is 1+2",
-        expected_reply_substring="3",
         bot_name_to_compoenent_id=BOT_NAME_TO_COMPONENT_ID,
     )
 

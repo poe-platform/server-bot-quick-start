@@ -1,5 +1,6 @@
 """
 
+NOTE: no longer deployed, please use prompt bot poe.com/DollarDivisor
 BOT_NAME="DollarDivider"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
 
 Test message:

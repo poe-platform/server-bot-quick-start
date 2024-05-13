@@ -1,5 +1,6 @@
 """
 
+NOTE: no longer deployed. This was a server bot because prompt bots can only access a limited number of CDN
 BOT_NAME="Pokemon3v3"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
 
 Test message:
