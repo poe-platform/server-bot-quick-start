@@ -22,9 +22,6 @@ DELAY_SECONDS_ON_RATE_LIMIT = 60
 
 async def get_bot_response(bot_name, messages):
     response = ""
-    print(messages)
-    print(bot_name)
-    print(os.environ["POE_API_KEY"])
     async for partial in fp.get_bot_response(
         messages=messages, bot_name=bot_name, api_key=os.environ["POE_API_KEY"]
     ):
@@ -80,9 +77,10 @@ def test_bot(
             response = asyncio.run(get_bot_response(bot_name, messages))
             print(f"Response:\n{response}")
         except Exception as e:
-            print(str(e))
-            if "BotError" in (str(e)):
+            print(f"{str(e)=}")
+            if "exceeded rate limit" in (str(e)):
                 time.sleep(DELAY_SECONDS_ON_RATE_LIMIT)
+                continue
 
         if response is None:
             description = f"Did not receive response at {get_utc_timestring()} UTC"
