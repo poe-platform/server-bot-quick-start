@@ -16,7 +16,7 @@ import requests
 from modal import App, Image
 
 RETRY_COUNT = 5
-DELAY_SECONDS = 6
+DELAY_SECONDS = 30
 DELAY_SECONDS_ON_RATE_LIMIT = 60
 
 
@@ -121,8 +121,8 @@ image = (
 app = App()
 
 
-@app.function(image=image, schedule=modal.Period(minutes=2))
-def update_statuspage_two_minutely():
+@app.function(image=image, schedule=modal.Period(hours=1), timeout=40 * 60)
+def update_statuspage_hourly():
     BOT_NAME_TO_COMPONENT_ID = {}
     for component in get_components().json():
         BOT_NAME_TO_COMPONENT_ID[component["name"]] = component["id"]
@@ -140,13 +140,6 @@ def update_statuspage_two_minutely():
         expected_reply_substring="3",
         bot_name_to_compoenent_id=BOT_NAME_TO_COMPONENT_ID,
     )
-
-
-@app.function(image=image, schedule=modal.Period(minutes=10))
-def update_statuspage_ten_minutely():
-    BOT_NAME_TO_COMPONENT_ID = {}
-    for component in get_components().json():
-        BOT_NAME_TO_COMPONENT_ID[component["name"]] = component["id"]
 
     test_bot(
         bot_name="ChatGPT",
@@ -197,21 +190,6 @@ def update_statuspage_ten_minutely():
         bot_name_to_compoenent_id=BOT_NAME_TO_COMPONENT_ID,
     )
 
-    # currently there is issues with testing attachment responses
-    # test_bot(
-    #     bot_name="PythonAgent",
-    #     user_message="make scatter plot",
-    #     expected_reply_substring="![plot]",
-    #     bot_name_to_compoenent_id=BOT_NAME_TO_COMPONENT_ID,
-    # )
-
-
-@app.function(image=image, schedule=modal.Period(hours=1))
-def update_statuspage_hourly():
-    BOT_NAME_TO_COMPONENT_ID = {}
-    for component in get_components().json():
-        BOT_NAME_TO_COMPONENT_ID[component["name"]] = component["id"]
-
     test_bot(
         bot_name="H-1B",
         user_message="Count the number H-1B1 Singapore applications in 2022",
@@ -227,7 +205,7 @@ def update_statuspage_hourly():
     )
 
 
-@app.function(image=image, schedule=modal.Period(days=1))
+@app.function(image=image, schedule=modal.Period(days=1), timeout=10 * 60)
 def update_statuspage_daily():
     BOT_NAME_TO_COMPONENT_ID = {}
     for component in get_components().json():

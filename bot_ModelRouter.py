@@ -17,18 +17,18 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
         # request.query = [
-        #     {"role": "system", "content": "Reply in Spanish"}
-        # ] + request.query
-        async for msg in fp.stream_request(request, "gemini-pro", request.access_key):
+        #     fp.ProtocolMessage(role="system", content="Reply in Spanish")
+        # ]
+        async for msg in fp.stream_request(request, "GPT-4o", request.access_key):
             yield msg
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(
-            server_bot_dependencies={"gemini-pro": 1}, allow_attachments=True
+            server_bot_dependencies={"GPT-4o": 1}, allow_attachments=True
         )
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.34"]
+REQUIREMENTS = ["fastapi-poe==0.0.43"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 stub = Stub("turbo-allcaps-poe")
 

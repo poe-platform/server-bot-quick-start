@@ -14,34 +14,53 @@ import os
 import re
 from typing import AsyncIterable
 
+import fastapi_poe as fp
 import modal
 from fastapi_poe import PoeBot, make_app
 from fastapi_poe.types import PartialResponse, QueryRequest
-from modal import Image, Stub, asgi_app
+from modal import App, Image, asgi_app
 
 
 def extract_codes(reply):
-    pattern = r"```([\s\S]*?)```"
+    pattern = r"```bash|sh([\s\S]*?)```"
     matches = re.findall(pattern, reply)
     if matches:
         return matches
-    return [reply]
+    return []
+
+
+image_exec = Image.debian_slim().apt_install("curl").apt_install("git")
 
 
 class EchoBot(PoeBot):
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[PartialResponse]:
-        last_message = request.query[-1].content
-        commands = extract_codes(last_message)
+        for query in request.query[::-1]:
+            commands = extract_codes(query.content)
+            if commands:
+                break
+        else:
+            commands = [request.query[-1].content]
+
+        yield fp.MetaResponse(
+            text="",
+            content_type="text/markdown",
+            linkify=True,
+            refetch_settings=False,
+            suggested_replies=False,
+        )
 
         for command in commands:
-            stub.nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
-            sb = stub.spawn_sandbox(
+            nfs = modal.NetworkFileSystem.from_name(
+                f"vol-{request.user_id}", create_if_missing=True
+            )
+            sb = app.spawn_sandbox(
                 "bash",
                 "-c",
                 f"cd /cache && {command}",
-                network_file_systems={"/cache": stub.nfs},
+                network_file_systems={"/cache": nfs},
+                image=image_exec,
             )
             sb.wait()
 
@@ -70,12 +89,12 @@ image = (
     .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
 )
 
-stub = Stub("poe-bot-quickstart")
+app = App("poe-bot-quickstart")
 
 bot = EchoBot()
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])

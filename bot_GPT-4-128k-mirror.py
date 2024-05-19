@@ -204,14 +204,11 @@ class EchoBot(PoeBot):
 
         if conversation_has_image:
             stream = client.chat.completions.create(
-                model="gpt-4-vision-preview",
-                messages=openai_messages,
-                stream=True,
-                max_tokens=4096,
+                model="gpt-4o", messages=openai_messages, stream=True, max_tokens=4096
             )
         else:
             stream = client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="gpt-4o",
                 messages=openai_messages_no_image,
                 stream=True,
                 max_tokens=4096,
@@ -225,7 +222,7 @@ class EchoBot(PoeBot):
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            server_bot_dependencies={"GPT-4-128k": 1},
+            server_bot_dependencies={"GPT-4o": 1},  # not using
             allow_attachments=True,
             introduction_message="",
         )
