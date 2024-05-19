@@ -20,6 +20,7 @@ import requests
 from fastapi_poe import PoeBot, make_app
 from fastapi_poe.client import MetaMessage, stream_request
 from fastapi_poe.types import (
+    Attachment,
     PartialResponse,
     ProtocolMessage,
     QueryRequest,
@@ -132,7 +133,7 @@ Your code was executed without issues, without any standard output.
 
 SIMULATED_USER_SUFFIX_IMAGE_FOUND = """
 
-Your code was executed and it displayed a plot.
+Your code was executed and it displayed a plot as attached. Please describe the plot and check if it makes sense.
 """
 
 SIMULATED_USER_SUFFIX_IMAGE_NOT_FOUND = """
@@ -142,7 +143,8 @@ Your code was executed but it did not display a plot.
 
 SIMULATED_USER_SUFFIX_PROMPT = """
 If there is an issue, you will fix the Python code.
-Otherwise, provide a brief and concise comment.
+
+Otherwise, conclude. Do not produce the final version of the script.
 """
 
 app = App("PythonAgent")
@@ -159,9 +161,9 @@ def wrap_session(code, conversation_id):
 
 
 class PythonAgentBot(PoeBot):
-    prompt_bot = "ChatGPT"
+    prompt_bot = "GPT-4o"
     code_iteration_limit = 3
-    logit_bias = {"21362": -10}  # "!["
+    logit_bias = {}  # "!["
     allow_attachments = True
     system_prompt_role = "system"  # Claude-3 does not allow system prompt yet
     stateful = True
@@ -208,12 +210,14 @@ class PythonAgentBot(PoeBot):
                 f.write(r.content)
             vol.add_local_file(attachment.name, attachment.name)
 
-        for query in request.query:
+        # for query in request.query:
             # bot calling doesn't allow attachments
-            query.attachments = []
+            # query.attachments = []
 
         for code_iteration_count in range(self.code_iteration_limit - 1):
             print("code_iteration_count", code_iteration_count)
+
+            print(request)
 
             current_bot_reply = ""
             async for msg in stream_request(request, self.prompt_bot, request.api_key):
@@ -273,6 +277,7 @@ class PythonAgentBot(PoeBot):
                 print(error)
 
             current_user_simulated_reply = ""
+            file_url = ""
             if output and error:
                 yield PartialResponse(
                     text=textwrap.dedent(f"\n\n```output\n{output}```\n\n")
@@ -316,7 +321,6 @@ class PythonAgentBot(PoeBot):
 
                 if image_data:
                     attachment_upload_response = await self.post_message_attachment(
-                        access_key=os.environ["POE_ACCESS_KEY"],
                         message_id=original_message_id,
                         file_data=image_data,
                         filename="image.png",
@@ -328,13 +332,13 @@ class PythonAgentBot(PoeBot):
                     )
                     vol.remove_file("image.png")
 
+                f = modal.Function.lookup("run-python-code-shared", "upload_file")
+                file_url = f.remote(image_data, "image.png")  # need async await?
+
             yield self.text_event("\n")
 
             if image_data is not None:
-                # wishlist - call an API that describes what is going on in the image
                 current_user_simulated_reply += SIMULATED_USER_SUFFIX_IMAGE_FOUND
-                if not output and not error:
-                    current_user_simulated_reply = SIMULATED_USER_SUFFIX_IMAGE_FOUND
             else:
                 if "matplotlib" in code:
                     current_user_simulated_reply += (
@@ -344,6 +348,10 @@ class PythonAgentBot(PoeBot):
             current_user_simulated_reply += SIMULATED_USER_SUFFIX_PROMPT
 
             message = ProtocolMessage(role="user", content=current_user_simulated_reply)
+            if file_url:
+                message.attachments = [
+                    Attachment(content_type="image/png", url=file_url, name="image.png")
+                ]
             request.query.append(message)
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
@@ -351,13 +359,21 @@ class PythonAgentBot(PoeBot):
             server_bot_dependencies={self.prompt_bot: self.code_iteration_limit},
             allow_attachments=self.allow_attachments,
             introduction_message="",
+            enable_image_comprehension=True,
         )
 
 
 image_bot = (
     Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.32", "requests==2.28.2")
-    .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
+    .pip_install("fastapi-poe==0.0.43", "requests==2.28.2", "cloudinary")
+    .env(
+        {
+            "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
+            "CLOUDINARY_CLOUD_NAME": os.environ["CLOUDINARY_CLOUD_NAME"],
+            "CLOUDINARY_API_KEY": os.environ["CLOUDINARY_API_KEY"],
+            "CLOUDINARY_API_SECRET": os.environ["CLOUDINARY_API_SECRET"],
+        }
+    )
 )
 
 image_exec = Image.debian_slim().pip_install(
@@ -405,6 +421,7 @@ image_exec = Image.debian_slim().pip_install(
     "seaborn",
     "openpyxl",
 )
+
 
 bot = PythonAgentBot()
 

@@ -19,7 +19,13 @@ bot_PythonAgent.PYTHON_AGENT_SYSTEM_PROMPT = """
 You will write the solution to a Leetcode problem.
 
 Implement your code as a method in the `class Solution`.
-"""
+
+Write test cases in this format. Do not create new test cases, only use the given test cases.
+
+s = Solution()
+print(s.<function>(<inputs>))  # Expected: <expected output>
+print(s.<function>(<inputs>))  # Expected: <expected output>
+""".strip()
 
 bot_PythonAgent.CODE_WITH_WRAPPERS = """\
 from typing import *
@@ -62,10 +68,12 @@ The code was executed and this is the output.
 ```
 
 Read the output and check whether is it wrong.
-If there is an issue, you will write Python code to fix it.
-You can debug by printing variables in the method.
 
-If the output looks ok, check whether the complexity of the solution is within the time limit. (Note: "105" is likely 10**5)
+If there is an issue, you will first hand-calculate (without code) the expected intermediate values. Then, check those values by printing the intermediate values, making sure that the intermediate values are printed.
+
+If the output looks ok, meticulously calculate the complexity of the solution to check whether it is within the time limit. (Note: "105" is likely 10**5). Fix the code if it is likely to exceed time limit.
+
+Do not present the final code for reference.
 """
 
 bot_PythonAgent.SIMULATED_USER_SUFFIX_PROMPT = ""

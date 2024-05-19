@@ -7,7 +7,7 @@ modal deploy function_upload.py
 
 import os
 
-from modal import Image, Stub
+from modal import Image, App
 
 image = (
     Image.debian_slim()
@@ -21,10 +21,10 @@ image = (
     )
 )
 
-stub = Stub("poe-bot-quickstart")
+app = App("run-python-code-shared")
 
 
-@stub.function(image=image, timeout=30)
+@app.function(image=image, timeout=30)
 def upload_file(data, file_name):
     import cloudinary.uploader
 
