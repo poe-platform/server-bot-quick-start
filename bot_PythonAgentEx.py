@@ -11,19 +11,17 @@ list directory
 import os
 
 from fastapi_poe import make_app
-from modal import Stub, asgi_app
+from modal import asgi_app
 
-from bot_PythonAgent import PythonAgentBot, image_bot
+from bot_PythonAgent import PythonAgentBot, image_bot, app
 
 bot = PythonAgentBot()
 bot.prompt_bot = "GPT-4o"
 bot.code_iteration_limit = 5
 bot.system_prompt_role = "user"
 
-stub = Stub("poe-bot-quickstart")
 
-
-@stub.function(image=image_bot, container_idle_timeout=1200)
+@app.function(image=image_bot, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])

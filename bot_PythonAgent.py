@@ -26,7 +26,7 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
-from modal import Image, Stub, asgi_app
+from modal import Image, App, asgi_app
 
 
 def extract_code(reply):
@@ -145,6 +145,7 @@ If there is an issue, you will fix the Python code.
 Otherwise, provide a brief and concise comment.
 """
 
+app = App("PythonAgent")
 
 def wrap_session(code, conversation_id):
     # the wrapper code
@@ -162,6 +163,7 @@ class PythonAgentBot(PoeBot):
     logit_bias = {"21362": -10}  # "!["
     allow_attachments = True
     system_prompt_role = "system"  # Claude-3 does not allow system prompt yet
+    stateful = True
 
     async def get_response(
         self, request: QueryRequest
@@ -187,9 +189,9 @@ class PythonAgentBot(PoeBot):
         try:
             vol = modal.NetworkFileSystem.lookup(f"vol-{request.user_id}")
         except Exception:
-            stub.nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
-            sb = stub.spawn_sandbox(
-                "bash", "-c", "cd /cache", network_file_systems={"/cache": stub.nfs}
+            nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
+            sb = app.spawn_sandbox(
+                "bash", "-c", "cd /cache", network_file_systems={"/cache": nfs}
             )
             sb.wait()
             vol = modal.NetworkFileSystem.lookup(f"vol-{request.user_id}")
@@ -248,13 +250,13 @@ class PythonAgentBot(PoeBot):
             )
 
             # execute code
-            stub.nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
-            sb = stub.spawn_sandbox(
+            nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
+            sb = app.spawn_sandbox(
                 "bash",
                 "-c",
                 f"cd /cache && python {request.conversation_id}.py",
                 image=image_exec,
-                network_file_systems={"/cache": stub.nfs},
+                network_file_systems={"/cache": nfs},
             )
             sb.wait()
 
@@ -403,12 +405,10 @@ image_exec = Image.debian_slim().pip_install(
     "openpyxl",
 )
 
-stub = Stub("poe-bot-quickstart")
-
 bot = PythonAgentBot()
 
 
-@stub.function(image=image_bot, container_idle_timeout=1200)
+@app.function(image=image_bot, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])

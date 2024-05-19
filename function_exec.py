@@ -8,7 +8,7 @@ modal deploy function_exec.py
 import sys
 from io import StringIO
 
-from modal import Image, Stub
+from modal import Image, App
 
 image = Image.debian_slim().pip_install(
     "fastapi-poe==0.0.23",
@@ -54,10 +54,10 @@ image = Image.debian_slim().pip_install(
     "dill",
 )
 
-stub = Stub("poe-bot-quickstart")
+app = App("run-python-code-shared")
 
 
-@stub.function(image=image, timeout=30, container_idle_timeout=1200)
+@app.function(image=image, timeout=30, container_idle_timeout=1200)
 def execute_code(code):
     import traitlets.config
     from IPython.terminal.embed import InteractiveShellEmbed

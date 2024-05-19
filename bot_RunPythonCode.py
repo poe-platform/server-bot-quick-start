@@ -15,7 +15,7 @@ import fastapi_poe.client
 import modal
 from fastapi_poe import MetaResponse, PoeBot, make_app
 from fastapi_poe.types import QueryRequest, SettingsRequest, SettingsResponse
-from modal import Image, Stub, asgi_app
+from modal import Image, App, asgi_app
 from sse_starlette.sse import ServerSentEvent
 
 fastapi_poe.client.MAX_EVENT_COUNT = 10000
@@ -134,10 +134,10 @@ image = (
     .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
 )
 
-stub = Stub("poe-bot-quickstart")
+app = App("poe-bot-quickstart")
 
 
-@stub.function(image=image, container_idle_timeout=1200)
+@app.function(image=image, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
