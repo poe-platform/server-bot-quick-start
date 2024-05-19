@@ -26,7 +26,7 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
-from modal import Image, App, asgi_app
+from modal import App, Image, asgi_app
 
 
 def extract_code(reply):
@@ -146,6 +146,7 @@ Otherwise, provide a brief and concise comment.
 """
 
 app = App("PythonAgent")
+
 
 def wrap_session(code, conversation_id):
     # the wrapper code

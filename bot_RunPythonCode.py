@@ -15,7 +15,7 @@ import fastapi_poe.client
 import modal
 from fastapi_poe import MetaResponse, PoeBot, make_app
 from fastapi_poe.types import QueryRequest, SettingsRequest, SettingsResponse
-from modal import Image, App, asgi_app
+from modal import App, Image, asgi_app
 from sse_starlette.sse import ServerSentEvent
 
 fastapi_poe.client.MAX_EVENT_COUNT = 10000

@@ -8,7 +8,7 @@ modal deploy function_exec.py
 import sys
 from io import StringIO
 
-from modal import Image, App
+from modal import App, Image
 
 image = Image.debian_slim().pip_install(
     "fastapi-poe==0.0.23",

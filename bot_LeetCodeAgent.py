@@ -13,7 +13,7 @@ from fastapi_poe import make_app
 from modal import asgi_app
 
 import bot_PythonAgent
-from bot_PythonAgent import PythonAgentBot, image_bot, app
+from bot_PythonAgent import PythonAgentBot, app, image_bot
 
 bot_PythonAgent.PYTHON_AGENT_SYSTEM_PROMPT = """
 You will write the solution to a Leetcode problem.
