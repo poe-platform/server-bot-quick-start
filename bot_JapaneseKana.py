@@ -2,7 +2,7 @@
 
 BOT_NAME="JapaneseKana"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
 
-Question modes
+question_tuple modes
 - kana -> romanji
 - romanji -> kana (note that this is not one to one)
 - (Future) multiple kana -> romanji
@@ -23,9 +23,6 @@ Four options would be shown (if the user wants to see options)
 I plan to use multi-armed bandit to select the hiragana
 - To choose questions that they are likely to get wrong
 - But for beginners we want them to get the easy hiragana correct rather than letting them suffer at hard characters
-
-Todo
-- refactor csv to type, question, answer, level, alt_*
 
 There are no LLM calls for this bot.
 """
@@ -50,19 +47,19 @@ df = pd.read_csv("japanese_kana.csv")
 # see also https://www.mdbg.net/chinese/dictionary?page=cedict
 
 
-QUESTION_TO_CORRECT_ANSWERS = defaultdict(list)
-QUESTION_TO_WRONG_ANSWERS = defaultdict(list)
+QUESTION_TUPLE_TO_CORRECT_ANSWERS = defaultdict(list)
+QUESTION_TUPLE_TO_WRONG_ANSWERS = defaultdict(list)
 
 for index, row in df.iterrows():
     row_dict = row.dropna().to_dict()
     for k, v in row_dict.items():
         if "answer" in k:
-            QUESTION_TO_CORRECT_ANSWERS[row.question, row.type].append(v)
+            QUESTION_TUPLE_TO_CORRECT_ANSWERS[row.question, row.type].append(v)
         if "wrong" in k:
-            QUESTION_TO_WRONG_ANSWERS[row.question, row.type].append(v)
+            QUESTION_TUPLE_TO_WRONG_ANSWERS[row.question, row.type].append(v)
 
-# print("QUESTION_TO_CORRECT_ANSWERS", QUESTION_TO_CORRECT_ANSWERS)
-# print("QUESTION_TO_WRONG_ANSWERS", QUESTION_TO_WRONG_ANSWERS)
+# print("QUESTION_TUPLE_TO_CORRECT_ANSWERS", QUESTION_TUPLE_TO_CORRECT_ANSWERS)
+# print("QUESTION_TUPLE_TO_WRONG_ANSWERS", QUESTION_TUPLE_TO_WRONG_ANSWERS)
 
 KANA_TO_ROMAJI_STARTING_QUESTION = """
 What is this in romaji?
@@ -119,7 +116,7 @@ def get_conversation_menu_key(conversation_id):
 
 def get_conversation_question_key(conversation_id):
     assert conversation_id.startswith("c")
-    return f"JapaneseKana-question-{conversation_id}"
+    return f"JapaneseKana-question_tuple-{conversation_id}"
 
 
 def get_conversation_answers_key(conversation_id):
@@ -168,15 +165,15 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         )
 
         user_failures = {
-            k: 1.5 / len(QUESTION_TO_CORRECT_ANSWERS)
-            for k in QUESTION_TO_CORRECT_ANSWERS.keys()
+            k: 1.5 / len(QUESTION_TUPLE_TO_CORRECT_ANSWERS)
+            for k in QUESTION_TUPLE_TO_CORRECT_ANSWERS.keys()
         }
         if user_failures_key in my_dict:
             user_failures = my_dict[user_failures_key]
 
         user_attempts = {
-            k: 3 / len(QUESTION_TO_CORRECT_ANSWERS)
-            for k in QUESTION_TO_CORRECT_ANSWERS.keys()
+            k: 3 / len(QUESTION_TUPLE_TO_CORRECT_ANSWERS)
+            for k in QUESTION_TUPLE_TO_CORRECT_ANSWERS.keys()
         }
         print("user_attempts", user_attempts)
         if user_attempts_key in my_dict:
@@ -184,16 +181,16 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
         old_question = None
         if conversation_answers_key in my_dict and conversation_question_key in my_dict:
-            question = my_dict[conversation_question_key]
+            question_tuple = my_dict[conversation_question_key]
             answers = my_dict[conversation_answers_key]
-            old_question = question
+            old_question = question_tuple
             print(user_attempts)
             for answer in answers:
                 if compare_answer(last_message, answer):
                     # actions if correct
                     print("correct")
                     yield self.text_event(STATEMENT_CORRECT)
-                    user_attempts[question] += 1
+                    user_attempts[question_tuple] += 1
                     break
             else:
                 # actions if wrong
@@ -202,43 +199,44 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
                 yield self.text_event(
                     STATEMENT_WRONG.format(answers=" / ".join(answers))
                 )
-                user_attempts[question] += 1
-                user_failures[question] += 1
+                user_attempts[question_tuple] += 1
+                user_failures[question_tuple] += 1
 
             my_dict[user_failures_key] = user_failures
             my_dict[user_attempts_key] = user_attempts
             yield self.text_event(
-                f"\n\n{user_attempts[question] - user_failures[question]:.1f} / {user_attempts[question]:.1f}\n\n"
+                f"\n\n{user_attempts[question_tuple] - user_failures[question_tuple]:.1f} / {user_attempts[question_tuple]:.1f}\n\n"
             )
             yield self.text_event("\n\n---\n\n")
 
+        # selection with upper confidence bound
         maxscore = 0
         maxquestion = 0
 
         t = sum(user_attempts.values()) - 1
-        for question in QUESTION_TO_CORRECT_ANSWERS.keys():
+        for question_tuple in QUESTION_TUPLE_TO_CORRECT_ANSWERS.keys():
             # TODO: apply filtering logic here
-            if old_question == question:
+            if old_question == question_tuple:
                 continue
-            mean = user_failures[question] / user_attempts[question]
+            mean = user_failures[question_tuple] / user_attempts[question_tuple]
             # mean + sqrt(ln(t) / attempts)
             score = (
                 mean
-                + math.sqrt(math.log(t) / user_attempts[question])
+                + math.sqrt(math.log(t) / user_attempts[question_tuple])
                 + random.random() * 0.01
             )
             if score > maxscore:
                 maxscore = score
-                maxquestion = question
+                maxquestion = question_tuple
 
         yield self.text_event(f"{maxscore:.4f}\n\n")
 
-        question = maxquestion
+        question_tuple = maxquestion
 
-        my_dict[conversation_answers_key] = QUESTION_TO_CORRECT_ANSWERS[question]
-        my_dict[conversation_question_key] = question
+        my_dict[conversation_answers_key] = QUESTION_TUPLE_TO_CORRECT_ANSWERS[question_tuple]
+        my_dict[conversation_question_key] = question_tuple
 
-        question_content, question_type = question
+        question_content, question_type = question_tuple
         if question_type == "hiragana_to_romaji_base":
             question_text = KANA_TO_ROMAJI_STARTING_QUESTION.format(
                 kana=question_content
@@ -263,12 +261,12 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         if user_options_key not in my_dict:
             my_dict[user_options_key] = True
 
-        options = [x for x in QUESTION_TO_WRONG_ANSWERS[question]]
+        options = [x for x in QUESTION_TUPLE_TO_WRONG_ANSWERS[question_tuple]]
 
         if my_dict[user_options_key]:
             options = set(options)
             options = list(options)[:3] + [
-                random.choice(QUESTION_TO_CORRECT_ANSWERS[question])
+                random.choice(QUESTION_TUPLE_TO_CORRECT_ANSWERS[question_tuple])
             ]
             print("options", options)
             random.shuffle(options)
