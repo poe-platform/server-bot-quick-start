@@ -32,6 +32,7 @@ There are no LLM calls for this bot.
 
 from __future__ import annotations
 
+import math
 import random
 import re
 from collections import defaultdict
@@ -53,15 +54,15 @@ QUESTION_TO_CORRECT_ANSWERS = defaultdict(list)
 QUESTION_TO_WRONG_ANSWERS = defaultdict(list)
 
 for index, row in df.iterrows():
-    row_dict = row.to_dict()
+    row_dict = row.dropna().to_dict()
     for k, v in row_dict.items():
         if "answer" in k:
             QUESTION_TO_CORRECT_ANSWERS[row.question, row.type].append(v)
         if "wrong" in k:
             QUESTION_TO_WRONG_ANSWERS[row.question, row.type].append(v)
 
-print("QUESTION_TO_CORRECT_ANSWERS", QUESTION_TO_CORRECT_ANSWERS)
-print("QUESTION_TO_WRONG_ANSWERS", QUESTION_TO_WRONG_ANSWERS)
+# print("QUESTION_TO_CORRECT_ANSWERS", QUESTION_TO_CORRECT_ANSWERS)
+# print("QUESTION_TO_WRONG_ANSWERS", QUESTION_TO_WRONG_ANSWERS)
 
 KANA_TO_ROMAJI_STARTING_QUESTION = """
 What is this in romaji?
@@ -103,12 +104,12 @@ def get_user_options_key(user_id):
 
 def get_user_attempts_key(user_id):
     assert user_id.startswith("u")
-    return f"JapaneseKana-attempts-v5-{user_id}"
+    return f"JapaneseKana-attempts-v9-{user_id}"
 
 
 def get_user_failures_key(user_id):
     assert user_id.startswith("u")
-    return f"JapaneseKana-failures-v5-{user_id}"
+    return f"JapaneseKana-failures-v9-{user_id}"
 
 
 def get_conversation_menu_key(conversation_id):
@@ -166,18 +167,26 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             suggested_replies=False,
         )
 
-        user_failures = {k: 0.5 for k in QUESTION_TO_CORRECT_ANSWERS.keys()}
+        user_failures = {
+            k: 1.5 / len(QUESTION_TO_CORRECT_ANSWERS)
+            for k in QUESTION_TO_CORRECT_ANSWERS.keys()
+        }
         if user_failures_key in my_dict:
             user_failures = my_dict[user_failures_key]
 
-        user_attempts = {k: 1 for k in QUESTION_TO_CORRECT_ANSWERS.keys()}
+        user_attempts = {
+            k: 3 / len(QUESTION_TO_CORRECT_ANSWERS)
+            for k in QUESTION_TO_CORRECT_ANSWERS.keys()
+        }
         print("user_attempts", user_attempts)
         if user_attempts_key in my_dict:
             user_attempts = my_dict[user_attempts_key]
 
+        old_question = None
         if conversation_answers_key in my_dict and conversation_question_key in my_dict:
             question = my_dict[conversation_question_key]
             answers = my_dict[conversation_answers_key]
+            old_question = question
             print(user_attempts)
             for answer in answers:
                 if compare_answer(last_message, answer):
@@ -203,43 +212,65 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             )
             yield self.text_event("\n\n---\n\n")
 
-        # sampling happens here
-        # TODO: filter the row first depending on why type of question the user wants
-        row = df.sample().dropna(axis=1).to_dict(orient="records")[0]
+        maxscore = 0
+        maxquestion = 0
 
-        answers = []
-        if "answer_1" in row:
-            answers.append(row["answer_1"])
-        if "answer_2" in row:
-            answers.append(row["answer_2"])
-        my_dict[conversation_answers_key] = answers
-        my_dict[conversation_question_key] = (row["question"], row["type"])
+        t = sum(user_attempts.values()) - 1
+        for question in QUESTION_TO_CORRECT_ANSWERS.keys():
+            # TODO: apply filtering logic here
+            if old_question == question:
+                continue
+            mean = user_failures[question] / user_attempts[question]
+            # mean + sqrt(ln(t) / attempts)
+            score = (
+                mean
+                + math.sqrt(math.log(t) / user_attempts[question])
+                + random.random() * 0.01
+            )
+            if score > maxscore:
+                maxscore = score
+                maxquestion = question
 
-        question = row["question"]
-        if row["type"] == "hiragana_to_romaji_base":
-            question_text = KANA_TO_ROMAJI_STARTING_QUESTION.format(kana=question)
+        yield self.text_event(f"{maxscore:.4f}\n\n")
+
+        question = maxquestion
+
+        my_dict[conversation_answers_key] = QUESTION_TO_CORRECT_ANSWERS[question]
+        my_dict[conversation_question_key] = question
+
+        question_content, question_type = question
+        if question_type == "hiragana_to_romaji_base":
+            question_text = KANA_TO_ROMAJI_STARTING_QUESTION.format(
+                kana=question_content
+            )
             yield self.text_event(question_text)
-        elif row["type"] == "katakana_to_romaji_base":
-            question_text = KANA_TO_ROMAJI_STARTING_QUESTION.format(kana=question)
+        elif question_type == "katakana_to_romaji_base":
+            question_text = KANA_TO_ROMAJI_STARTING_QUESTION.format(
+                kana=question_content
+            )
             yield self.text_event(question_text)
-        elif row["type"] == "romaji_to_hiragana_base":
-            question_text = ROMAJI_TO_HIRAGANA_STARTING_QUESTION.format(romaji=question)
+        elif question_type == "romaji_to_hiragana_base":
+            question_text = ROMAJI_TO_HIRAGANA_STARTING_QUESTION.format(
+                romaji=question_content
+            )
             yield self.text_event(question_text)
-        elif row["type"] == "romaji_to_katakana_base":
-            question_text = ROMAJI_TO_KATAKANA_STARTING_QUESTION.format(romaji=question)
+        elif question_type == "romaji_to_katakana_base":
+            question_text = ROMAJI_TO_KATAKANA_STARTING_QUESTION.format(
+                romaji=question_content
+            )
             yield self.text_event(question_text)
 
         if user_options_key not in my_dict:
             my_dict[user_options_key] = True
 
-        options = []
-        for k, v in row.items():
-            if "wrong_" in k:
-                options.append(v)
+        options = [x for x in QUESTION_TO_WRONG_ANSWERS[question]]
 
         if my_dict[user_options_key]:
             options = set(options)
-            options = list(options)[:3] + [random.choice(answers)]
+            options = list(options)[:3] + [
+                random.choice(QUESTION_TO_CORRECT_ANSWERS[question])
+            ]
+            print("options", options)
             random.shuffle(options)
             for option in options:
                 yield self.suggested_reply_event(text=option)
