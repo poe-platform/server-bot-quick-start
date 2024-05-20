@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import random
 import re
+from collections import defaultdict
 from typing import AsyncIterable
 
 import fastapi_poe as fp
@@ -47,6 +48,20 @@ df = pd.read_csv("japanese_kana.csv")
 # using https://github.com/krmanik/HSK-3.0-words-list/tree/main/HSK%20List
 # see also https://www.mdbg.net/chinese/dictionary?page=cedict
 
+
+QUESTION_TO_CORRECT_ANSWERS = defaultdict(list)
+QUESTION_TO_WRONG_ANSWERS = defaultdict(list)
+
+for index, row in df.iterrows():
+    row_dict = row.to_dict()
+    for k, v in row_dict.items():
+        if "answer" in k:
+            QUESTION_TO_CORRECT_ANSWERS[row.question, row.type].append(v)
+        if "wrong" in k:
+            QUESTION_TO_WRONG_ANSWERS[row.question, row.type].append(v)
+
+print("QUESTION_TO_CORRECT_ANSWERS", QUESTION_TO_CORRECT_ANSWERS)
+print("QUESTION_TO_WRONG_ANSWERS", QUESTION_TO_WRONG_ANSWERS)
 
 KANA_TO_ROMAJI_STARTING_QUESTION = """
 What is this in romaji?
@@ -86,14 +101,29 @@ def get_user_options_key(user_id):
     return f"JapaneseKana-options-{user_id}"
 
 
+def get_user_attempts_key(user_id):
+    assert user_id.startswith("u")
+    return f"JapaneseKana-attempts-v5-{user_id}"
+
+
+def get_user_failures_key(user_id):
+    assert user_id.startswith("u")
+    return f"JapaneseKana-failures-v5-{user_id}"
+
+
 def get_conversation_menu_key(conversation_id):
     assert conversation_id.startswith("c")
     return f"JapaneseKana-level-{conversation_id}"
 
 
-def get_conversation_answers_key(conversation_id):
+def get_conversation_question_key(conversation_id):
     assert conversation_id.startswith("c")
     return f"JapaneseKana-question-{conversation_id}"
+
+
+def get_conversation_answers_key(conversation_id):
+    assert conversation_id.startswith("c")
+    return f"JapaneseKana-answers-{conversation_id}"
 
 
 # Pattern to keep lowercase, uppercase alphabets and Hiragana characters
@@ -112,6 +142,11 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
     ) -> AsyncIterable[fp.PartialResponse]:
         user_options_key = get_user_options_key(request.user_id)
         conversation_answers_key = get_conversation_answers_key(request.conversation_id)
+        conversation_question_key = get_conversation_question_key(
+            request.conversation_id
+        )
+        user_failures_key = get_user_failures_key(request.user_id)
+        user_attempts_key = get_user_attempts_key(request.user_id)
 
         last_message = request.query[-1].content
 
@@ -131,21 +166,44 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             suggested_replies=False,
         )
 
-        if conversation_answers_key in my_dict:
+        user_failures = {k: 0.5 for k in QUESTION_TO_CORRECT_ANSWERS.keys()}
+        if user_failures_key in my_dict:
+            user_failures = my_dict[user_failures_key]
+
+        user_attempts = {k: 1 for k in QUESTION_TO_CORRECT_ANSWERS.keys()}
+        print("user_attempts", user_attempts)
+        if user_attempts_key in my_dict:
+            user_attempts = my_dict[user_attempts_key]
+
+        if conversation_answers_key in my_dict and conversation_question_key in my_dict:
+            question = my_dict[conversation_question_key]
             answers = my_dict[conversation_answers_key]
+            print(user_attempts)
             for answer in answers:
                 if compare_answer(last_message, answer):
+                    # actions if correct
                     print("correct")
                     yield self.text_event(STATEMENT_CORRECT)
+                    user_attempts[question] += 1
                     break
             else:
+                # actions if wrong
                 print("wrong")
                 print(STATEMENT_WRONG)
                 yield self.text_event(
                     STATEMENT_WRONG.format(answers=" / ".join(answers))
                 )
+                user_attempts[question] += 1
+                user_failures[question] += 1
+
+            my_dict[user_failures_key] = user_failures
+            my_dict[user_attempts_key] = user_attempts
+            yield self.text_event(
+                f"\n\n{user_attempts[question] - user_failures[question]:.1f} / {user_attempts[question]:.1f}\n\n"
+            )
             yield self.text_event("\n\n---\n\n")
 
+        # sampling happens here
         # TODO: filter the row first depending on why type of question the user wants
         row = df.sample().dropna(axis=1).to_dict(orient="records")[0]
 
@@ -155,6 +213,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         if "answer_2" in row:
             answers.append(row["answer_2"])
         my_dict[conversation_answers_key] = answers
+        my_dict[conversation_question_key] = (row["question"], row["type"])
 
         question = row["question"]
         if row["type"] == "hiragana_to_romaji_base":
