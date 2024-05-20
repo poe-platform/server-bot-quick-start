@@ -61,9 +61,14 @@ QUESTION_TUPLE_TO_QUESTION_TUPLE = defaultdict(set)
 for row in records:
     for k, v in row.items():
         if "answer" in k:
-            QUESTION_TUPLE_TO_CORRECT_ANSWERS[row["question"], row["type"]].append(v)
+            QUESTION_TUPLE_TO_CORRECT_ANSWERS[
+                row["question"], row["type"], row["class"]
+            ].append(v)
         if "wrong" in k:
-            QUESTION_TUPLE_TO_WRONG_ANSWERS[row["question"], row["type"]].append(v)
+            QUESTION_TUPLE_TO_WRONG_ANSWERS[
+                row["question"], row["type"], row["class"]
+            ].append(v)
+    del row
 
 for row1 in records:
     for row2 in records:
@@ -71,12 +76,13 @@ for row1 in records:
             if "answer" in k1 or "wrong" in k1:
                 if v1 == row2["question"]:
                     QUESTION_TUPLE_TO_QUESTION_TUPLE[
-                        row1["question"], row1["type"]
-                    ].add((row2["question"], row2["type"]))
+                        row1["question"], row1["type"], row1["class"]
+                    ].add((row2["question"], row2["type"], row2["class"]))
                     QUESTION_TUPLE_TO_QUESTION_TUPLE[
-                        row2["question"], row2["type"]
-                    ].add((row1["question"], row1["type"]))
-
+                        row2["question"], row2["type"], row2["class"]
+                    ].add((row1["question"], row1["type"], row1["class"]))
+        del row2
+    del row1
 
 # print("QUESTION_TUPLE_TO_CORRECT_ANSWERS", QUESTION_TUPLE_TO_CORRECT_ANSWERS)
 # print("QUESTION_TUPLE_TO_WRONG_ANSWERS", QUESTION_TUPLE_TO_WRONG_ANSWERS)
@@ -114,6 +120,8 @@ DISABLE_OPTIONS_COMMAND = "I do not need options."
 
 ENABLE_OPTIONS_COMMAND = "I want to see options."
 
+VERSION = "v17"
+
 
 def get_user_options_key(user_id):
     assert user_id.startswith("u")
@@ -122,27 +130,22 @@ def get_user_options_key(user_id):
 
 def get_user_attempts_key(user_id):
     assert user_id.startswith("u")
-    return f"JapaneseKana-attempts-v14-{user_id}"
+    return f"JapaneseKana-attempts-{VERSION}-{user_id}"
 
 
 def get_user_failures_key(user_id):
     assert user_id.startswith("u")
-    return f"JapaneseKana-failures-v14-{user_id}"
-
-
-def get_conversation_menu_key(conversation_id):
-    assert conversation_id.startswith("c")
-    return f"JapaneseKana-level-{conversation_id}"
+    return f"JapaneseKana-failures-{VERSION}-{user_id}"
 
 
 def get_conversation_question_key(conversation_id):
     assert conversation_id.startswith("c")
-    return f"JapaneseKana-question_tuple-{conversation_id}"
+    return f"JapaneseKana-question_tuple-{VERSION}-{conversation_id}"
 
 
 def get_conversation_answers_key(conversation_id):
     assert conversation_id.startswith("c")
-    return f"JapaneseKana-answers-{conversation_id}"
+    return f"JapaneseKana-answers-{VERSION}-{conversation_id}"
 
 
 # Pattern to keep lowercase, uppercase alphabets and Hiragana characters
@@ -246,8 +249,8 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
                 for question_tuple_related in QUESTION_TUPLE_TO_CORRECT_ANSWERS.keys():
                     if (
-                        question_tuple_related[1] == question_tuple[1]
-                    ):  # same question type
+                        question_tuple_related[-1] == question_tuple[-1]
+                    ):  # same question class
                         user_failures[question_tuple_related] += 0.01
                         user_attempts[question_tuple_related] += 0.01
 
@@ -288,7 +291,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         ]
         my_dict[conversation_question_key] = question_tuple
 
-        question_content, question_type = question_tuple
+        question_content, question_type, question_class = question_tuple
         if question_type == "hiragana_to_romaji_base":
             question_text = KANA_TO_ROMAJI_STARTING_QUESTION.format(
                 kana=question_content
