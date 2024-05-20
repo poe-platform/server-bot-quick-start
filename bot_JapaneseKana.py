@@ -43,19 +43,38 @@ from modal import App, Dict, Image, asgi_app
 app = App("poe-bot-JapaneseKana")
 my_dict = Dict.from_name("dict-JapaneseKana", create_if_missing=True)
 
-df = pd.read_csv("japanese_hiragana.csv")
+df = pd.read_csv("japanese_kana.csv")
 # using https://github.com/krmanik/HSK-3.0-words-list/tree/main/HSK%20List
 # see also https://www.mdbg.net/chinese/dictionary?page=cedict
 
-HIRAGANA_TO_ROMAJI_MAP = {}
-for _, row in df.iterrows():
-    HIRAGANA_TO_ROMAJI_MAP[row.hiragana] = row.romaji
 
-HIRAGANA_TO_ROMAJI_STARTING_QUESTION = """
-Please write the following in romaji
+KANA_TO_ROMAJI_STARTING_QUESTION = """
+What is this in romaji?
 
-# {hiragana}
+# {kana}
 """.strip()
+
+
+ROMAJI_TO_HIRAGANA_STARTING_QUESTION = """
+What is this in hiragana?
+
+# {romaji}
+""".strip()
+
+
+ROMAJI_TO_KATAKANA_STARTING_QUESTION = """
+What is this in katakana?
+
+# {romaji}
+""".strip()
+
+
+STATEMENT_CORRECT = (
+    f"\\[ \\textcolor{{green}}{{\\text{{\\textbf{{You are correct}}}}}} \\]"
+)
+
+STATEMENT_WRONG = "\\[ \\textcolor{{red}}{{\\text{{\\textbf{{The expected answer is {answers}}}}}}} \\]"
+
 
 DISABLE_OPTIONS_COMMAND = "I do not need options."
 
@@ -72,13 +91,13 @@ def get_conversation_menu_key(conversation_id):
     return f"JapaneseKana-level-{conversation_id}"
 
 
-def get_conversation_question_key(conversation_id):
+def get_conversation_answers_key(conversation_id):
     assert conversation_id.startswith("c")
     return f"JapaneseKana-question-{conversation_id}"
 
 
 # Pattern to keep lowercase, uppercase alphabets and Hiragana characters
-pattern = r"[^a-zA-Z\u3040-\u309F]+"
+pattern = r"[^a-zA-Z\u3040-\u309F\u30A0-\u30FF]+"
 
 
 def compare_answer(submission, reference):
@@ -92,19 +111,16 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
         user_options_key = get_user_options_key(request.user_id)
-        conversation_question_key = get_conversation_question_key(
-            request.conversation_id
-        )
+        conversation_answers_key = get_conversation_answers_key(request.conversation_id)
 
         last_message = request.query[-1].content
-        print(f"{last_message=}")
 
         if last_message == DISABLE_OPTIONS_COMMAND:
             my_dict[user_options_key] = False
-            del my_dict[conversation_question_key]
+            del my_dict[conversation_answers_key]
         elif last_message == ENABLE_OPTIONS_COMMAND:
             my_dict[user_options_key] = True
-            del my_dict[conversation_question_key]
+            del my_dict[conversation_answers_key]
 
         # disable suggested replies by default
         yield fp.MetaResponse(
@@ -115,32 +131,56 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             suggested_replies=False,
         )
 
-        if conversation_question_key in my_dict:
-            hiragana = my_dict[conversation_question_key]
-            romaji = HIRAGANA_TO_ROMAJI_MAP[hiragana]
-            if compare_answer(last_message, romaji):
-                print("correct")
-                yield self.text_event(f"You are correct.")
+        if conversation_answers_key in my_dict:
+            answers = my_dict[conversation_answers_key]
+            for answer in answers:
+                if compare_answer(last_message, answer):
+                    print("correct")
+                    yield self.text_event(STATEMENT_CORRECT)
+                    break
             else:
                 print("wrong")
-                yield self.text_event(f"The expected answer is `{romaji}`")
+                print(STATEMENT_WRONG)
+                yield self.text_event(
+                    STATEMENT_WRONG.format(answers=" / ".join(answers))
+                )
             yield self.text_event("\n\n---\n\n")
 
-        hiragana = random.choice(list(HIRAGANA_TO_ROMAJI_MAP.keys()))
-        romaji = HIRAGANA_TO_ROMAJI_MAP[hiragana]
+        # TODO: filter the row first depending on why type of question the user wants
+        row = df.sample().dropna(axis=1).to_dict(orient="records")[0]
 
-        question_text = HIRAGANA_TO_ROMAJI_STARTING_QUESTION.format(hiragana=hiragana)
-        yield self.text_event(question_text)
+        answers = []
+        if "answer_1" in row:
+            answers.append(row["answer_1"])
+        if "answer_2" in row:
+            answers.append(row["answer_2"])
+        my_dict[conversation_answers_key] = answers
 
-        my_dict[conversation_question_key] = hiragana
+        question = row["question"]
+        if row["type"] == "hiragana_to_romaji_base":
+            question_text = KANA_TO_ROMAJI_STARTING_QUESTION.format(kana=question)
+            yield self.text_event(question_text)
+        elif row["type"] == "katakana_to_romaji_base":
+            question_text = KANA_TO_ROMAJI_STARTING_QUESTION.format(kana=question)
+            yield self.text_event(question_text)
+        elif row["type"] == "romaji_to_hiragana_base":
+            question_text = ROMAJI_TO_HIRAGANA_STARTING_QUESTION.format(romaji=question)
+            yield self.text_event(question_text)
+        elif row["type"] == "romaji_to_katakana_base":
+            question_text = ROMAJI_TO_KATAKANA_STARTING_QUESTION.format(romaji=question)
+            yield self.text_event(question_text)
 
         if user_options_key not in my_dict:
             my_dict[user_options_key] = True
 
+        options = []
+        for k, v in row.items():
+            if "wrong_" in k:
+                options.append(v)
+
         if my_dict[user_options_key]:
-            options = random.sample(list(HIRAGANA_TO_ROMAJI_MAP.values()), 7)
-            options = set(options) - {romaji}
-            options = list(options)[:3] + [romaji]
+            options = set(options)
+            options = list(options)[:3] + [random.choice(answers)]
             random.shuffle(options)
             for option in options:
                 yield self.suggested_reply_event(text=option)
@@ -162,7 +202,7 @@ REQUIREMENTS = ["fastapi-poe==0.0.37", "pandas"]
 image = (
     Image.debian_slim()
     .pip_install(*REQUIREMENTS)
-    .copy_local_file("japanese_hiragana.csv", "/root/japanese_hiragana.csv")
+    .copy_local_file("japanese_kana.csv", "/root/japanese_kana.csv")
 )
 
 

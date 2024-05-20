@@ -144,7 +144,7 @@ Your code was executed but it did not display a plot.
 SIMULATED_USER_SUFFIX_PROMPT = """
 If there is an issue, you will fix the Python code.
 
-Otherwise, conclude. Do not produce the final version of the script.
+Otherwise, conclude with only text in plaintext. Do NOT produce the final version of the script.
 """
 
 app = App("PythonAgent")
@@ -211,8 +211,8 @@ class PythonAgentBot(PoeBot):
             vol.add_local_file(attachment.name, attachment.name)
 
         # for query in request.query:
-            # bot calling doesn't allow attachments
-            # query.attachments = []
+        # bot calling doesn't allow attachments
+        # query.attachments = []
 
         for code_iteration_count in range(self.code_iteration_limit - 1):
             print("code_iteration_count", code_iteration_count)

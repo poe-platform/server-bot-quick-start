@@ -7,7 +7,7 @@ modal deploy function_upload.py
 
 import os
 
-from modal import Image, App
+from modal import App, Image
 
 image = (
     Image.debian_slim()
