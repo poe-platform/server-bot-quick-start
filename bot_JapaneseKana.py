@@ -47,19 +47,40 @@ df = pd.read_csv("japanese_kana.csv")
 # see also https://www.mdbg.net/chinese/dictionary?page=cedict
 
 
+df = pd.read_csv("japanese_kana.csv")
+# using https://github.com/krmanik/HSK-3.0-words-list/tree/main/HSK%20List
+# see also https://www.mdbg.net/chinese/dictionary?page=cedict
+
+records = df.to_dict(orient="records")
+records = [{k: v for k, v in record.items() if pd.notna(v)} for record in records]
+
 QUESTION_TUPLE_TO_CORRECT_ANSWERS = defaultdict(list)
 QUESTION_TUPLE_TO_WRONG_ANSWERS = defaultdict(list)
+QUESTION_TUPLE_TO_QUESTION_TUPLE = defaultdict(set)
 
-for index, row in df.iterrows():
-    row_dict = row.dropna().to_dict()
-    for k, v in row_dict.items():
+for row in records:
+    for k, v in row.items():
         if "answer" in k:
-            QUESTION_TUPLE_TO_CORRECT_ANSWERS[row.question, row.type].append(v)
+            QUESTION_TUPLE_TO_CORRECT_ANSWERS[row["question"], row["type"]].append(v)
         if "wrong" in k:
-            QUESTION_TUPLE_TO_WRONG_ANSWERS[row.question, row.type].append(v)
+            QUESTION_TUPLE_TO_WRONG_ANSWERS[row["question"], row["type"]].append(v)
+
+for row1 in records:
+    for row2 in records:
+        for k1, v1 in row1.items():
+            if "answer" in k1 or "wrong" in k1:
+                if v1 == row2["question"]:
+                    QUESTION_TUPLE_TO_QUESTION_TUPLE[
+                        row1["question"], row1["type"]
+                    ].add((row2["question"], row2["type"]))
+                    QUESTION_TUPLE_TO_QUESTION_TUPLE[
+                        row2["question"], row2["type"]
+                    ].add((row1["question"], row1["type"]))
+
 
 # print("QUESTION_TUPLE_TO_CORRECT_ANSWERS", QUESTION_TUPLE_TO_CORRECT_ANSWERS)
 # print("QUESTION_TUPLE_TO_WRONG_ANSWERS", QUESTION_TUPLE_TO_WRONG_ANSWERS)
+# print("QUESTION_TUPLE_TO_QUESTION_TUPLE", QUESTION_TUPLE_TO_QUESTION_TUPLE['ju', 'romaji_to_hiragana_base'])
 
 KANA_TO_ROMAJI_STARTING_QUESTION = """
 What is this in romaji?
@@ -101,12 +122,12 @@ def get_user_options_key(user_id):
 
 def get_user_attempts_key(user_id):
     assert user_id.startswith("u")
-    return f"JapaneseKana-attempts-v9-{user_id}"
+    return f"JapaneseKana-attempts-v14-{user_id}"
 
 
 def get_user_failures_key(user_id):
     assert user_id.startswith("u")
-    return f"JapaneseKana-failures-v9-{user_id}"
+    return f"JapaneseKana-failures-v14-{user_id}"
 
 
 def get_conversation_menu_key(conversation_id):
@@ -175,7 +196,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             k: 3 / len(QUESTION_TUPLE_TO_CORRECT_ANSWERS)
             for k in QUESTION_TUPLE_TO_CORRECT_ANSWERS.keys()
         }
-        print("user_attempts", user_attempts)
+        # print("user_attempts", user_attempts)
         if user_attempts_key in my_dict:
             user_attempts = my_dict[user_attempts_key]
 
@@ -184,13 +205,28 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             question_tuple = my_dict[conversation_question_key]
             answers = my_dict[conversation_answers_key]
             old_question = question_tuple
-            print(user_attempts)
+            # print(user_attempts)
             for answer in answers:
                 if compare_answer(last_message, answer):
                     # actions if correct
                     print("correct")
                     yield self.text_event(STATEMENT_CORRECT)
                     user_attempts[question_tuple] += 1
+
+                    for question_tuple_related in QUESTION_TUPLE_TO_QUESTION_TUPLE[
+                        question_tuple
+                    ]:
+                        print(question_tuple_related)
+                        user_attempts[question_tuple_related] += 0.1
+
+                    for (
+                        question_tuple_related
+                    ) in QUESTION_TUPLE_TO_CORRECT_ANSWERS.keys():
+                        if (
+                            question_tuple_related[1] == question_tuple[1]
+                        ):  # same question type
+                            user_attempts[question_tuple_related] += 0.01
+
                     break
             else:
                 # actions if wrong
@@ -199,13 +235,26 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
                 yield self.text_event(
                     STATEMENT_WRONG.format(answers=" / ".join(answers))
                 )
-                user_attempts[question_tuple] += 1
                 user_failures[question_tuple] += 1
+                user_attempts[question_tuple] += 1
+
+                for question_tuple_related in QUESTION_TUPLE_TO_QUESTION_TUPLE[
+                    question_tuple
+                ]:
+                    user_failures[question_tuple_related] += 0.1
+                    user_attempts[question_tuple_related] += 0.1
+
+                for question_tuple_related in QUESTION_TUPLE_TO_CORRECT_ANSWERS.keys():
+                    if (
+                        question_tuple_related[1] == question_tuple[1]
+                    ):  # same question type
+                        user_failures[question_tuple_related] += 0.01
+                        user_attempts[question_tuple_related] += 0.01
 
             my_dict[user_failures_key] = user_failures
             my_dict[user_attempts_key] = user_attempts
             yield self.text_event(
-                f"\n\n{user_attempts[question_tuple] - user_failures[question_tuple]:.1f} / {user_attempts[question_tuple]:.1f}\n\n"
+                f"\n\n{user_attempts[question_tuple] - user_failures[question_tuple]:.2f} / {user_attempts[question_tuple]:.2f}\n\n"
             )
             yield self.text_event("\n\n---\n\n")
 
@@ -219,11 +268,12 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             if old_question == question_tuple:
                 continue
             mean = user_failures[question_tuple] / user_attempts[question_tuple]
-            # mean + sqrt(ln(t) / attempts)
+            c = 0.01
+            # mean + c * sqrt(ln(t) / attempts)
             score = (
                 mean
-                + math.sqrt(math.log(t) / user_attempts[question_tuple])
-                + random.random() * 0.01
+                + c * math.sqrt(math.log(t) / user_attempts[question_tuple])
+                + random.randint(0, 1) / 10
             )
             if score > maxscore:
                 maxscore = score
@@ -233,7 +283,9 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
         question_tuple = maxquestion
 
-        my_dict[conversation_answers_key] = QUESTION_TUPLE_TO_CORRECT_ANSWERS[question_tuple]
+        my_dict[conversation_answers_key] = QUESTION_TUPLE_TO_CORRECT_ANSWERS[
+            question_tuple
+        ]
         my_dict[conversation_question_key] = question_tuple
 
         question_content, question_type = question_tuple
