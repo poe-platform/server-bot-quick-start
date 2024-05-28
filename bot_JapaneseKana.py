@@ -113,7 +113,7 @@ STATEMENT_CORRECT = (
     f"\\[ \\textcolor{{green}}{{\\text{{\\textbf{{You are correct}}}}}} \\]"
 )
 
-STATEMENT_WRONG = "\\[ \\textcolor{{red}}{{\\text{{\\textbf{{The expected answer is {answers}}}}}}} \\]"
+STATEMENT_WRONG = "\\[ \\textcolor{{red}}{{\\text{{\\textbf{{The expected answer is}}}}}} \\]\n\n# {answers}"
 
 
 DISABLE_OPTIONS_COMMAND = "I do not need options."
@@ -256,10 +256,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
             my_dict[user_failures_key] = user_failures
             my_dict[user_attempts_key] = user_attempts
-            yield self.text_event(
-                f"\n\n{user_attempts[question_tuple] - user_failures[question_tuple]:.2f} / {user_attempts[question_tuple]:.2f}\n\n"
-            )
-            yield self.text_event("\n\n---\n\n")
+            yield self.text_event("\n\n---\n\n---\n\n---\n\n")
 
         # selection with upper confidence bound
         maxscore = 0
@@ -282,9 +279,11 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
                 maxscore = score
                 maxquestion = question_tuple
 
-        yield self.text_event(f"{maxscore:.4f}\n\n")
-
         question_tuple = maxquestion
+
+        yield self.text_event(
+            f"{user_attempts[question_tuple] - user_failures[question_tuple]:.2f} / {user_attempts[question_tuple]:.2f} | {maxscore:.4f}\n\n"
+        )
 
         my_dict[conversation_answers_key] = QUESTION_TUPLE_TO_CORRECT_ANSWERS[
             question_tuple

@@ -125,7 +125,7 @@ su,す,,romaji_to_hiragana_base,hiragana,,,,,さ,し,せ,そ,は,ひ,ふ
 se,せ,,romaji_to_hiragana_base,hiragana,,,,,さ,し,す,そ,ま,み,む
 so,そ,,romaji_to_hiragana_base,hiragana,,,,,さ,し,す,せ,や,ゆ,よ
 sha,しゃ,,romaji_to_hiragana_base,hiragana,しゅ,しょ,,,きゃ,ちゃ,にゃ,ひゃ,みゃ,りゃ,ぎゃ
-shu,しゅ,,romaji_to_hiragana_base,hiragana,しゃ,しょ,,,きゅ,ちゅ,にゅ,ひゅ,みゅ,りゅ,ぎゅ
+shu,しゅ,,romaji_to_hiragana_base,hiragana,しゃ,しょ,,,きゅ,ちゅ,にゅ,ひゅ,みゅ,す,し
 sho,しょ,,romaji_to_hiragana_base,hiragana,しゃ,しゅ,,,きょ,ちょ,にょ,ひょ,みょ,りょ,ぎょ
 ta,た,,romaji_to_hiragana_base,hiragana,,,,,ち,つ,て,と,さ,し,す
 chi,ち,,romaji_to_hiragana_base,hiragana,,,,,た,つ,て,と,な,に,ぬ
@@ -227,7 +227,7 @@ pyo,ぴょ,,romaji_to_hiragana_base,hiragana,ぴゃ,ぴゅ,,,きょ,しょ,ち�
 セ,se,,katakana_to_romaji_base,katakana,,,,,so,shi,sa,ki,ku,ka,re
 ソ,so,,katakana_to_romaji_base,katakana,,,,,se,su,shi,ke,sho,ru,ka
 シャ,sha,,katakana_to_romaji_base,katakana,shu,sho,,,sa,so,sho,shi,ku,ka,yo
-シュ,shu,,katakana_to_romaji_base,katakana,sha,sho,,,sha,sho,shi,ki,kya,ko,yo
+シュ,shu,,katakana_to_romaji_base,katakana,sha,sho,,,sha,sho,shi,ki,kya,su,yo
 ショ,sho,,katakana_to_romaji_base,katakana,sha,shu,,,shi,sha,so,ki,ta,yo,ku
 タ,ta,,katakana_to_romaji_base,katakana,,,,,shi,ka,no,te,na,ru,ke
 チ,chi,,katakana_to_romaji_base,katakana,,,,,to,shi,ji,ko,ku,re,ki
