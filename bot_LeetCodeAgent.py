@@ -26,6 +26,7 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
+import fastapi_poe as fp
 from modal import App, Image, asgi_app
 
 
@@ -38,9 +39,13 @@ def extract_code(reply):
 PYTHON_AGENT_SYSTEM_PROMPT = """
 You will write the solution and the test cases to a Leetcode problem.
 
-Implement your code as a method in the `class Solution` along with the test cases.
+Implement your code as a method in the `class Solution` along with the given test cases. The user will provide the output executed by the code.
 
-Write test cases in this format. Do not create new test cases, only use the given test cases.
+You will also fix the issues with the code.
+When there are issues, you will print the intermediate values in the code.
+When the intermediate values are printed, you will hand-calculate what the intermediate values should be.
+Then you fix the issue by implementing the full solution along with the given test cases.
+If you are repeatedly stuck on the same error, start afresh and try an entirely different method instead.
 
 class Solution:
     def ...
@@ -50,11 +55,13 @@ print(s.<function>(<inputs>))  # Expected: <expected output>
 print(s.<function>(<inputs>))  # Expected: <expected output>
 
 Reminder:
+- Write test cases in this format. Do not create new test cases, only use the given test cases.
 - Always return the full solution and the test cases in the same Python block
 """.strip()
 
 
 CODE_WITH_WRAPPERS = """\
+import math
 from typing import *
 from collections import *
 import collections
@@ -75,16 +82,6 @@ The code was executed and this is the output.
 ```output
 {output}
 ```
-
-Read the output and check whether is it wrong.
-
-If there is an issue, you will first hand-calculate (without code) the expected intermediate values, and reflect what is wrong.
-Then, you will fix the issue by producing the full solution and the test cases in the same Python block, checking the intermediate values with print statements.
-If you are stuck, start afresh and try an entirely different method instead.
-
-If the output looks ok, meticulously calculate the complexity of the solution to check whether it is within the time limit. (Note: "105" is likely 10**5). Fix the code if it is likely to exceed time limit.
-
-Do not present the final code for reference.
 """
 
 SIMULATED_USER_SUFFIX_PROMPT = ""
@@ -106,6 +103,17 @@ Your code was executed and this is the error.
 {error}
 ```
 """
+
+# OPTIONS_STRING = """
+
+# Options:
+
+# Continue
+# Optimize the solution.
+# Create a large test case (do not check correctness for this large test case).
+# Create a small test, hand-calculate its output, and compare the solution's output.
+# Clean up the print statements.
+# """.rstrip()
 
 
 app = App("PythonAgent")
@@ -139,6 +147,15 @@ class PythonAgentBot(PoeBot):
 
         PYTHON_AGENT_SYSTEM_MESSAGE = ProtocolMessage(
             role=self.system_prompt_role, content=PYTHON_AGENT_SYSTEM_PROMPT
+        )
+
+        # otherwise, disable suggested replies
+        yield fp.MetaResponse(
+            text="",
+            content_type="text/markdown",
+            linkify=False,
+            refetch_settings=False,
+            suggested_replies=False,
         )
 
         request.query = [PYTHON_AGENT_SYSTEM_MESSAGE] + request.query
@@ -183,7 +200,7 @@ class PythonAgentBot(PoeBot):
             # if the bot output does not have code, terminate
             code = extract_code(current_bot_reply)
             if not code:
-                return
+                break
             code = wrap_code(code)
 
             # prepare code for execution
@@ -242,6 +259,13 @@ class PythonAgentBot(PoeBot):
                     Attachment(content_type="image/png", url=file_url, name="image.png")
                 ]
             request.query.append(message)
+
+        yield PartialResponse(text="Continue", is_suggested_reply=True)
+        yield PartialResponse(text="Optimize the solution.", is_suggested_reply=True)
+        yield PartialResponse(text="Create a large test case (do not check correctness for this large test case).", is_suggested_reply=True)
+        yield PartialResponse(text="Create a small test, hand-calculate its output, and compare the solution's output.", is_suggested_reply=True)
+        yield PartialResponse(text="Clean up the print statements.", is_suggested_reply=True)
+
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
