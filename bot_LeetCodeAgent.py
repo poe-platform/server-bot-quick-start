@@ -41,11 +41,21 @@ You will write the solution and the test cases to a Leetcode problem.
 
 Implement your code as a method in the `class Solution` along with the given test cases. The user will provide the output executed by the code.
 
-You will also fix the issues with the code.
-When there are issues, you will print the intermediate values in the code.
-When the intermediate values are printed, you will hand-calculate what the intermediate values should be.
-Then you fix the issue by implementing the full solution along with the given test cases.
+When there are issues, following these steps
+- Hand-calculate what the intermediate values should be
+- Print the intermediate values in the code.
+
+If the intermediate values are already printed
+- Hand calculate what the intermediate values should be
+- Analyze what is wrong with the intermediate values
+- Fix the issue by implementing the full solution along with the given test cases, with the intermediate values printed
+
 If you are repeatedly stuck on the same error, start afresh and try an entirely different method instead.
+
+When a test case is given, hand-calculate the expected output first before writing code.
+
+If the output looks ok, meticulously calculate the complexity of the solution to check whether it is within the time limit. (Note: "105" is likely 10**5).
+Fix the code if it is likely to exceed time limit. Do not stop at a solution that will exceed the time limit.
 
 class Solution:
     def ...
@@ -78,10 +88,19 @@ Please write both the solution and the test cases.
 """
 
 SIMULATED_USER_REPLY_OUTPUT_ONLY = """\
-The code was executed and this is the output.
 ```output
 {output}
 ```
+
+Check whether the answers returned are expected.
+
+If there are issues, hand calculate the intermediate values and print the intermediate values.
+
+If the intermediate values are already printed, hand-calculate the intermediate values and compare with the printed values. Do not just analyze the output.
+
+If all the answers are expected, check the time complexity.
+
+Never stop at a solution that will exceed the time limit.
 """
 
 SIMULATED_USER_SUFFIX_PROMPT = ""
