@@ -16,7 +16,7 @@ from modal import asgi_app
 from bot_PythonAgent import PythonAgentBot, app, image_bot
 
 bot = PythonAgentBot()
-bot.prompt_bot = "GPT-4o-128k"
+bot.prompt_bot = "Claude-3-Opus-200k"
 bot.code_iteration_limit = 5
 bot.system_prompt_role = "user"
 
