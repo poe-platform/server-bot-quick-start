@@ -21,7 +21,7 @@ image = (
     )
 )
 
-app = App("run-python-code-shared")
+app = App("function-upload-shared")
 
 
 @app.function(image=image, timeout=30)
@@ -39,6 +39,27 @@ def upload_file(data, file_name):
 
     # reject if file size is too big
     reply = cloudinary.uploader.upload(file_name)
+    file_url = reply["secure_url"]
+    print("file_url")
+    print(file_url)
+    return file_url
+
+
+@app.function(image=image, timeout=30)
+def upload_file_by_string(data_string, file_name):
+    import cloudinary.uploader
+
+    with open(file_name, "w") as f:
+        f.write(data_string)
+
+    cloudinary.config(
+        cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
+        api_key=os.environ["CLOUDINARY_API_KEY"],
+        api_secret=os.environ["CLOUDINARY_API_SECRET"],
+    )
+
+    # reject if file size is too big
+    reply = cloudinary.uploader.upload(file_name,  resource_type="raw")
     file_url = reply["secure_url"]
     print("file_url")
     print(file_url)

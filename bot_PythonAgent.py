@@ -332,7 +332,7 @@ class PythonAgentBot(PoeBot):
                     )
                     vol.remove_file("image.png")
 
-                f = modal.Function.lookup("run-python-code-shared", "upload_file")
+                f = modal.Function.lookup("function-upload-shared", "upload_file")
                 file_url = f.remote(image_data, "image.png")  # need async await?
 
             yield self.text_event("\n")
