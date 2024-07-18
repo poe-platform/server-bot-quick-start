@@ -10,7 +10,7 @@ import json
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, Stub, asgi_app
+from modal import Image, App, asgi_app
 
 
 def get_current_weather(location, unit="fahrenheit"):
@@ -69,12 +69,12 @@ class GPT35FunctionCallingBot(fp.PoeBot):
         return fp.SettingsResponse(server_bot_dependencies={"GPT-3.5-Turbo": 2})
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36"]
+REQUIREMENTS = ["fastapi-poe==0.0.46"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("function-calling-poe")
+app = App("function-calling-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = GPT35FunctionCallingBot()

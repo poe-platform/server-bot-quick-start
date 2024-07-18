@@ -5,7 +5,7 @@ from typing import AsyncIterable
 import fastapi_poe as fp
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from modal import Image, Stub, asgi_app
+from modal import Image, App, asgi_app
 
 
 class LangchainOpenAIChatBot(fp.PoeBot):
@@ -31,12 +31,12 @@ class LangchainOpenAIChatBot(fp.PoeBot):
             yield fp.PartialResponse(text="There was an issue processing your query.")
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36", "langchain==0.0.330", "openai==0.28.1"]
+REQUIREMENTS = ["fastapi-poe==0.0.46", "langchain==0.0.330", "openai==0.28.1"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("langchain-openai-poe")
+app = App("langchain-openai-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     OPENAI_API_KEY = "<your key>"

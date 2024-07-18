@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, Stub, asgi_app
+from modal import Image, App, asgi_app
 
 
 class HttpRequestBot(fp.PoeBot):
@@ -23,12 +23,12 @@ class HttpRequestBot(fp.PoeBot):
         )
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36"]
+REQUIREMENTS = ["fastapi-poe==0.0.46"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("http-request")
+app = App("http-request")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = HttpRequestBot()

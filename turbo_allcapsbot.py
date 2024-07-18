@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, Stub, asgi_app
+from modal import Image, App, asgi_app
 
 
 class GPT35TurboAllCapsBot(fp.PoeBot):
@@ -25,12 +25,12 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         return fp.SettingsResponse(server_bot_dependencies={"GPT-3.5-Turbo": 1})
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36"]
+REQUIREMENTS = ["fastapi-poe==0.0.46"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("turbo-allcaps-poe")
+app = App("turbo-allcaps-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurboAllCapsBot()

@@ -12,7 +12,7 @@ from collections import defaultdict
 from typing import AsyncIterable, AsyncIterator
 
 import fastapi_poe as fp
-from modal import Image, Stub, asgi_app
+from modal import Image, App, asgi_app
 
 
 async def combine_streams(
@@ -124,12 +124,12 @@ class GPT35TurbovsClaudeBot(fp.PoeBot):
         )
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36"]
+REQUIREMENTS = ["fastapi-poe==0.0.46"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("turbo-vs-claude-poe")
+app = App("turbo-vs-claude-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurbovsClaudeBot()

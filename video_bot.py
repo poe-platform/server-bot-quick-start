@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, Mount, Stub, asgi_app
+from modal import Image, Mount, App, asgi_app
 
 
 class VideoBot(fp.PoeBot):
@@ -18,9 +18,9 @@ class VideoBot(fp.PoeBot):
         yield fp.PartialResponse(text="Attached a video.")
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36"]
+REQUIREMENTS = ["fastapi-poe==0.0.46"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("video-bot")
+app = App("video-bot")
 
 
 def get_app():
@@ -29,7 +29,7 @@ def get_app():
     return fp.make_app(bot)
 
 
-@stub.function(
+@app.function(
     image=image, mounts=[Mount.from_local_dir("./assets", remote_path="/root/assets")]
 )
 @asgi_app()
