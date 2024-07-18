@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, Stub, asgi_app
+from modal import App, Image, asgi_app
 
 
 class EchoBot(fp.PoeBot):
@@ -22,12 +22,12 @@ class EchoBot(fp.PoeBot):
         yield fp.PartialResponse(text=last_message)
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36"]
+REQUIREMENTS = ["fastapi-poe==0.0.46"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("echobot-poe")
+app = App("echobot-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = EchoBot()

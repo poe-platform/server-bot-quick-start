@@ -12,7 +12,7 @@ from typing import AsyncIterable
 import fastapi_poe as fp
 from huggingface_hub import AsyncInferenceClient
 from huggingface_hub.inference._types import ConversationalOutput
-from modal import Image, Stub, asgi_app
+from modal import App, Image, asgi_app
 
 
 @dataclass
@@ -67,12 +67,12 @@ class HuggingFaceConversationalBot(fp.PoeBot):
         yield fp.PartialResponse(text=response_data["generated_text"])
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36", "huggingface-hub==0.16.4"]
+REQUIREMENTS = ["fastapi-poe==0.0.46", "huggingface-hub==0.16.4"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("huggingface-poe")
+app = App("huggingface-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = HuggingFaceConversationalBot(model="microsoft/DialoGPT-large")

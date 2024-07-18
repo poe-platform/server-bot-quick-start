@@ -13,7 +13,7 @@ import asyncio
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, Stub, asgi_app
+from modal import App, Image, asgi_app
 
 
 class CatBot(fp.PoeBot):
@@ -99,12 +99,12 @@ class CatBot(fp.PoeBot):
         )
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36"]
+REQUIREMENTS = ["fastapi-poe==0.0.46"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("catbot-poe")
+app = App("catbot-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = CatBot()

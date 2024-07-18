@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, Stub, asgi_app
+from modal import App, Image, asgi_app
 
 IMAGE_URL = (
     "https://images.pexels.com/photos/46254/leopard-wildcat-big-cat-botswana-46254.jpeg"
@@ -17,12 +17,12 @@ class SampleImageResponseBot(fp.PoeBot):
         yield fp.PartialResponse(text=f"This is a test image. ![leopard]({IMAGE_URL})")
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36"]
+REQUIREMENTS = ["fastapi-poe==0.0.46"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("image-response-poe")
+app = App("image-response-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = SampleImageResponseBot()
