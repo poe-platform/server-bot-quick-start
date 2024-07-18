@@ -12,7 +12,7 @@ from typing import AsyncIterable
 import fastapi_poe as fp
 from huggingface_hub import AsyncInferenceClient
 from huggingface_hub.inference._types import ConversationalOutput
-from modal import Image, App, asgi_app
+from modal import App, Image, asgi_app
 
 
 @dataclass

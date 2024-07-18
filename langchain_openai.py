@@ -5,7 +5,7 @@ from typing import AsyncIterable
 import fastapi_poe as fp
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from modal import Image, App, asgi_app
+from modal import App, Image, asgi_app
 
 
 class LangchainOpenAIChatBot(fp.PoeBot):

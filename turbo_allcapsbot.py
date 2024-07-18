@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, App, asgi_app
+from modal import App, Image, asgi_app
 
 
 class GPT35TurboAllCapsBot(fp.PoeBot):

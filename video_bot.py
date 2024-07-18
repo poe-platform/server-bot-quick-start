@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import Image, Mount, App, asgi_app
+from modal import App, Image, Mount, asgi_app
 
 
 class VideoBot(fp.PoeBot):
