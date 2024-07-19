@@ -4,7 +4,7 @@ from typing import AsyncIterable
 
 import fastapi_poe as fp
 import requests
-from modal import Image, Stub, asgi_app
+from modal import App, Image, asgi_app
 from PyPDF2 import PdfReader
 
 
@@ -44,12 +44,12 @@ class PDFSizeBot(fp.PoeBot):
         return fp.SettingsResponse(allow_attachments=True)
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.36", "PyPDF2==3.0.1", "requests==2.31.0"]
+REQUIREMENTS = ["fastapi-poe==0.0.46", "PyPDF2==3.0.1", "requests==2.31.0"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-stub = Stub("pdf-counter-poe")
+app = App("pdf-counter-poe")
 
 
-@stub.function(image=image)
+@app.function(image=image)
 @asgi_app()
 def fastapi_app():
     bot = PDFSizeBot()
