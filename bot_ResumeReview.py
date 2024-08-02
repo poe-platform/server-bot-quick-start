@@ -124,6 +124,7 @@ class EchoBot(PoeBot):
                 query_message.content += (
                     f"\n\n This is the attached resume: {resume_string}"
                 )
+                query_message.attachments = []
 
             elif query_message.attachments and query_message.attachments[
                 0
@@ -134,15 +135,22 @@ class EchoBot(PoeBot):
                 query_message.content += (
                     f"\n\n This is the attached resume: {resume_string}"
                 )
+                query_message.attachments = []
 
-            query_message.attachments = []
+            elif len(query_message.attachments) == 1 and query_message.attachments[
+                0
+            ].content_type.startswith("image"):
+                pass
+
+            else:
+                query_message.attachments = []
 
         query.query = [
             ProtocolMessage(role="system", content=RESUME_SYSTEM_PROMPT)
         ] + query.query
 
         current_message = ""
-        async for msg in stream_request(query, "ChatGPT", query.api_key):
+        async for msg in stream_request(query, "Claude-3.5-Sonnet", query.api_key):
             # Note: See https://poe.com/ResumeReviewTool for the prompt
             if isinstance(msg, MetaMessage):
                 continue
@@ -156,9 +164,9 @@ class EchoBot(PoeBot):
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            server_bot_dependencies={"ChatGPT": 1},
+            server_bot_dependencies={"Claude-3.5-Sonnet": 1},
             allow_attachments=True,  # to update when ready
-            introduction_message="Please upload your resume (pdf, docx) and say 'Review this'.",
+            introduction_message="Please upload your resume (pdf, docx, image) and say 'Review this'.",
         )
 
 

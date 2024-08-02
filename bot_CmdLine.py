@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import re
+import stat
 from typing import AsyncIterable
 
 import fastapi_poe as fp
@@ -22,7 +23,7 @@ from modal import App, Image, asgi_app
 
 
 def extract_codes(reply):
-    pattern = r"```bash|sh([\s\S]*?)```"
+    pattern = r"```(bash|sh)\n([\s\S]*?)\n```"
     matches = re.findall(pattern, reply)
     if matches:
         return matches
@@ -51,14 +52,28 @@ class EchoBot(PoeBot):
             suggested_replies=False,
         )
 
+        print("check")
+        print(commands)
+
         for command in commands:
             nfs = modal.NetworkFileSystem.from_name(
                 f"vol-{request.user_id}", create_if_missing=True
             )
+
+            filename = f"{request.conversation_id}.sh"
+            with open(f"{filename}", "w") as f:
+                f.write(command)
+            os.chmod(filename, os.stat(filename).st_mode | stat.S_IEXEC)
+
+            nfs.add_local_file(
+                f"{request.conversation_id}.sh", f"{request.conversation_id}.sh"
+            )
+
             sb = app.spawn_sandbox(
                 "bash",
                 "-c",
                 f"cd /cache && {command}",
+                # f"cd /cache && chmod +x {filename} && ./{filename}",
                 network_file_systems={"/cache": nfs},
                 image=image_exec,
             )
@@ -85,7 +100,7 @@ class EchoBot(PoeBot):
 # specific to hosting with modal.com
 image = (
     Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.23")
+    .pip_install("fastapi-poe==0.0.45")
     .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
 )
 

@@ -1,6 +1,6 @@
 """
 
-BOT_NAME="TrinoAgent"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
+BOT_NAME="TrinoAgent"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY; curl -X POST https://api.poe.com/bot/fetch_settings/"$BOT_NAME"Ex/$POE_ACCESS_KEY
 
 Test message:
 How to NVL
@@ -92,7 +92,7 @@ def make_query(query):
 
 
 class TrinoAgentBot(PoeBot):
-    prompt_bot = "ChatGPT"
+    prompt_bot = "Claude-3-Haiku"
     iteration_count = 3
 
     async def get_response(
@@ -169,8 +169,6 @@ class TrinoAgentBot(PoeBot):
         )
 
 
-bot = TrinoAgentBot()
-
 image_bot = (
     Image.debian_slim()
     .pip_install("fastapi-poe==0.0.37", "trino")
@@ -186,9 +184,21 @@ image_bot = (
 
 stub = Stub("poe-bot-quickstart")
 
+bot1 = TrinoAgentBot()
 
 @stub.function(image=image_bot, container_idle_timeout=1200)
 @asgi_app()
-def fastapi_app():
-    app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
+def fastapi_app1():
+    app = make_app(bot1, api_key=os.environ["POE_ACCESS_KEY"])
+    return app
+
+
+bot2 = TrinoAgentBot()
+bot2.prompt_bot = "Claude-3.5-Sonnet-200k"
+bot2.iteration_count = 10
+
+@stub.function(image=image_bot, container_idle_timeout=1200)
+@asgi_app()
+def fastapi_app2():
+    app = make_app(bot2, api_key=os.environ["POE_ACCESS_KEY"])
     return app
