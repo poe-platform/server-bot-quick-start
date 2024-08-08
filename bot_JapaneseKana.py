@@ -337,6 +337,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
         return fp.SettingsResponse(
             server_bot_dependencies={},
             introduction_message="Say 'start' to get the sample.",
+            allow_attachments=False,
         )
 
 
