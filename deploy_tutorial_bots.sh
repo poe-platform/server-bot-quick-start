@@ -2,10 +2,10 @@
 # You need to change the bot handle
 
 # poe.com/EchoBotDemonstration
-BOT_NAME="EchoBotDemonstration"; modal deploy --name $BOT_NAME echobot.py
+BOT_NAME="EchoBotDemo"; modal deploy --name $BOT_NAME echobot.py
 
 # poe.com/CatBotDemo
-BOT_NAME="CatBotDemo"; modal deploy --name $BOT_NAME catbot/__init__.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
+BOT_NAME="CatBotDemo"; modal deploy --name $BOT_NAME catbot.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
 
 # poe.com/AllCapsBotDemo
 BOT_NAME="AllCapsBotDemo"; modal deploy --name $BOT_NAME turbo_allcapsbot.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
