@@ -1,44 +1,46 @@
 """
 
-Sample bot that shows how to access the HTTP request.
+Sample bot that wraps Claude-3-Haiku but makes responses Haikus
 
 """
 
 from __future__ import annotations
 
-import re
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from devtools import PrettyFormat
 from modal import App, Image, asgi_app
 
-pformat = PrettyFormat(width=85)
+SYSTEM_PROMPT = """
+All your replies are Haikus.
+""".strip()
 
 
-class HttpRequestBot(fp.PoeBot):
-    async def get_response_with_context(
-        self, request: fp.QueryRequest, context: fp.RequestContext
+class PromptBot(fp.PoeBot):
+    async def get_response(
+        self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
+        request.query = [
+            fp.ProtocolMessage(role="system", content=SYSTEM_PROMPT)
+        ] + request.query
+        async for msg in fp.stream_request(
+            request, "Claude-3-Haiku", request.access_key
+        ):
+            yield msg
 
-        context_string = pformat(context)
-        context_string = re.sub(r"Bearer \w+", "Bearer [REDACTED]", context_string)
-        context_string = re.sub(
-            r"b'host',\s*b'([^']*)'", r"b'host', b'[REDACTED_HOST]'", context_string
-        )
-
-        yield fp.PartialResponse(text="```python\n" + context_string + "\n```")
+    async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
+        return fp.SettingsResponse(server_bot_dependencies={"Claude-3-Haiku": 1})
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.46", "devtools==0.12.2"]
+REQUIREMENTS = ["fastapi-poe==0.0.47"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-app = App("http-request")
+app = App("prompt-bot-poe")
 
 
 @app.function(image=image)
 @asgi_app()
 def fastapi_app():
-    bot = HttpRequestBot()
+    bot = PromptBot()
     # Optionally, provide your Poe access key here:
     # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
     # 2. We strongly recommend using a key for a production bot to prevent abuse,
