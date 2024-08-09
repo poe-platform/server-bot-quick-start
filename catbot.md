@@ -6,7 +6,7 @@ useful task for users. But for this example, we'll instead build a Small Cat Mod
 so you can use it to see the full protocol in action in the Poe app. It doesn't use an
 LLM or provide a compelling user experience; we're providing it merely as a sample so
 you can build more useful bots. There is a running example of the bot at
-[HerokuCat](https://poe.com/HerokuCat).
+[CatBotDemo](https://poe.com/CatBotDemo).
 
 The SCM represents a simple cat with just a few behaviors:
 
