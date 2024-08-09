@@ -9,26 +9,42 @@ in this repo. Note that the starter code assumes you have Modal setup for deploy
 
 ### EchoBot
 
-This bot simply repeats the user's query in the response and provides a good starting
-point to build any type of bot. To deploy, run `modal deploy echobot.py`
+- This bot simply repeats the user's query in the response.
+- Before you build any server bots, you should start with reproducing this bot.
+- To deploy, run `modal deploy echobot.py`
 
 A correct implementation would look like https://poe.com/EchoBotDemonstration
 
-### TurboAllCapsBot
+### PromptBot
 
-- This bot responds to the user's query using GPT-3.5-Turbo. It demonstrates how to use
-  the Poe platform to cover the inference costs for your chatbot. To deploy, run
-  `modal deploy turbo_allcapsbot.py`.
+- This bot is an implementation of the prompt bot as a server bot.
+- It demonstrates how to use the Poe platform to cover the inference costs for your
+  chatbot.
+- If you intend to call Poe server to build your bot response, you should try
+  reproducing this bot.
+- This bot uses Claude-3-Haiku and the system prompt instructs the bot to produce
+  Haikus.
+- To deploy, run `modal deploy prompt_bot.py`
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
   [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
 
-A correct implementation would look like https://poe.com/AllCapsBotDemo
+A correct implementation would look like https://poe.com/PromptBotDemo
+
+### WrapperBot
+
+- This bot is an implementation of the prompt bot as a server bot.
+- This demostrates how to wrap OpenAI API.
+- You will need your OpenAI API key.
+- To deploy, run `modal deploy wrapper_bot.py`
+
+A correct implementation would look like https://poe.com/WrapperBotDemo
 
 ### CatBot
 
-A sample bot that demonstrates the Markdown capabilities of the Poe API. To deploy, run
-`modal deploy catbot/__init__.py`
+- A sample bot that demonstrates the Markdown capabilities of the Poe API.
+- See instructions [here](./catbot.md)
+- To deploy, run `modal deploy catbot.py`
 
 A correct implementation would look like https://poe.com/CatBotDemo
 
@@ -38,6 +54,17 @@ A bot that demonstrates how to render an image in the response using Markdown. T
 deploy, run `modal deploy image_response_bot.py`
 
 A correct implementation would look like https://poe.com/ImageResponseBotDemo
+
+### VideoBot
+
+- A bot that demonstrates how to attach files to your bot response. This example
+  specifically uses video, but outputting other file types is fairly similar.
+- Before you are able to use this bot, you do need to set your access key. You can get
+  yours from the [create bot page](https://poe.com/create_bot?server=1).
+- Note that you will need use the same POE_ACCESS_KEY.
+- To deploy, run `modal deploy video_bot.py`
+
+A correct implementation would look like https://poe.com/VideoBotDemo
 
 ### PDFCounterBot
 
@@ -49,14 +76,6 @@ A correct implementation would look like https://poe.com/ImageResponseBotDemo
 
 A correct implementation would look like https://poe.com/PDFCounterBotDemo
 
-### VideoBot
-
-- A bot that demonstrates how to attach files to your bot response. This example
-  specifically uses video, but outputting other file types is fairly similar.
-- Before you are able to use this bot, you do need to set your access key. You can get
-  yours from the [create bot page](https://poe.com/create_bot?server=1).
-- To deploy, run `modal deploy video_bot.py`
-
 ### Function calling bot
 
 - A bot that demonstrates how to use the Poe API for function calling.
@@ -65,25 +84,39 @@ A correct implementation would look like https://poe.com/PDFCounterBotDemo
   [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
 - To deploy, run `modal deploy function_calling_bot.py`
 
-### HttpRequestBot
+A correct implementation would look like https://poe.com/FunctionCallingDemo
 
-Provides an example of how to access HTTP request information in your bot. To deploy,
-run `modal deploy http_request_bot.py`
+### LogBot
 
-### HuggingFaceBot
+- Illustrate what is contained in the QueryRequest object.
+- To deploy, run `modal deploy log_bot.py`
 
-Provides an example of a bot powered by a model hosted on HuggingFace. To deploy, run
-`modal deploy huggingface_bot.py`
+A correct implementation would look like https://poe.com/LogBotDemo
 
-### Langchain OpenAI
+### HTTPRequestBot
 
-Provides an example of a bot powered by Langchain. This bot requires you to provide your
-OpenAI key. To deploy, run `modal deploy langchain_openai.py`
+- Provides an example of how to access HTTP request information in your bot.
+- To deploy, run `modal deploy http_request_bot.py`
+
+A correct implementation would look like https://poe.com/HTTPRequestBotDemo
+
+### TurboAllCapsBot
+
+- This bot responds to the user's query using GPT-3.5-Turbo.
+- It demonstrates how to use the Poe platform to cover the inference costs for your
+  chatbot.
+- To deploy, run `modal deploy turbo_allcapsbot.py`.
+- Before you are able to use the bot, you also need to synchronize the bot's settings
+  with the Poe Platform, the instructions for which are specified
+  [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
+
+A correct implementation would look like https://poe.com/AllCapsBotDemo
 
 ### TurboVsClaudeBot
 
 - This is a more advanced example that demonstrates how to render output in realtime
-  comparing two different bots. To deploy, run `modal deploy turbo_vs_claude.py`
+  comparing two different bots.
+- To deploy, run `modal deploy turbo_vs_claude.py`
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified
   [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
