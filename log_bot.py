@@ -1,12 +1,11 @@
 """
 
-Sample bot that shows how to access the HTTP request.
+Sample bot that shows the query sent to the bot.
 
 """
 
 from __future__ import annotations
 
-import re
 from typing import AsyncIterable
 
 import fastapi_poe as fp
@@ -16,29 +15,27 @@ from modal import App, Image, asgi_app
 pformat = PrettyFormat(width=85)
 
 
-class HttpRequestBot(fp.PoeBot):
-    async def get_response_with_context(
-        self, request: fp.QueryRequest, context: fp.RequestContext
+class LogBot(fp.PoeBot):
+    async def get_response(
+        self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
+        yield fp.PartialResponse(text="```python\n" + pformat(request) + "\n```")
 
-        context_string = pformat(context)
-        context_string = re.sub(r"Bearer \w+", "Bearer [REDACTED]", context_string)
-        context_string = re.sub(
-            r"b'host',\s*b'([^']*)'", r"b'host', b'[REDACTED_HOST]'", context_string
+    async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
+        return fp.SettingsResponse(
+            allow_attachments=True, enable_image_comprehension=True
         )
 
-        yield fp.PartialResponse(text="```python\n" + context_string + "\n```")
 
-
-REQUIREMENTS = ["fastapi-poe==0.0.46", "devtools==0.12.2"]
+REQUIREMENTS = ["fastapi-poe==0.0.47", "devtools==0.12.2"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-app = App("http-request")
+app = App("log-bot-poe")
 
 
 @app.function(image=image)
 @asgi_app()
 def fastapi_app():
-    bot = HttpRequestBot()
+    bot = LogBot()
     # Optionally, provide your Poe access key here:
     # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
     # 2. We strongly recommend using a key for a production bot to prevent abuse,
