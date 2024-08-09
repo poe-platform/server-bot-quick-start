@@ -30,3 +30,6 @@ BOT_NAME="LogBotDemo"; modal deploy --name $BOT_NAME log_bot.py; curl -X POST ht
 
 # poe.com/HttpRequestBotDemo
 BOT_NAME="HttpRequestBotDemo"; modal deploy --name $BOT_NAME http_request_bot.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
+
+# poe.com/VideoBot
+BOT_NAME="VideoBotDemo"; modal deploy --name $BOT_NAME video_bot.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
