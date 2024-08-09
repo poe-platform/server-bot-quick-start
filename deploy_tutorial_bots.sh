@@ -21,3 +21,12 @@ BOT_NAME="FunctionCallingDemo"; modal deploy --name $BOT_NAME function_calling_b
 
 # poe.com/TurboVsClaudeBotDemo
 BOT_NAME="TurboVsClaudeBotDemo"; modal deploy --name $BOT_NAME turbo_vs_claude.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
+
+# poe.com/PromptBotDemo
+BOT_NAME="PromptBotDemo"; modal deploy --name $BOT_NAME prompt_bot.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
+
+# poe.com/LogBotDemo
+BOT_NAME="LogBotDemo"; modal deploy --name $BOT_NAME log_bot.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
+
+# poe.com/HttpRequestBotDemo
+BOT_NAME="HttpRequestBotDemo"; modal deploy --name $BOT_NAME http_request_bot.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
