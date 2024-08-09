@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
@@ -19,14 +20,12 @@ class VideoBot(fp.PoeBot):
 
 
 REQUIREMENTS = ["fastapi-poe==0.0.46"]
-image = Image.debian_slim().pip_install(*REQUIREMENTS)
+image = (
+    Image.debian_slim()
+    .pip_install(*REQUIREMENTS)
+    .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
+)
 app = App("video-bot")
-
-
-def get_app():
-    access_key = "<put your access key here>"
-    bot = VideoBot(access_key=access_key)
-    return fp.make_app(bot)
 
 
 @app.function(
@@ -34,4 +33,13 @@ def get_app():
 )
 @asgi_app()
 def fastapi_app():
-    return get_app()
+    bot = VideoBot()
+    # Optionally, provide your Poe access key here:
+    # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
+    # 2. We strongly recommend using a key for a production bot to prevent abuse,
+    # but the starter examples disable the key check for convenience.
+    # 3. You can also store your access key on modal.com and retrieve it in this function
+    # by following the instructions at: https://modal.com/docs/guide/secrets
+    POE_ACCESS_KEY = os.environ["POE_ACCESS_KEY"]
+    app = fp.make_app(bot, access_key=POE_ACCESS_KEY)
+    return app
