@@ -26,19 +26,21 @@ class PDFSizeBot(fp.PoeBot):
     async def get_response(
         self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
+        yield fp.PartialResponse(
+            text="Iterating over the pdfs uploaded in this conversation ..."
+        )
         for message in reversed(request.query):
             for attachment in message.attachments:
                 if attachment.content_type == "application/pdf":
                     try:
                         num_pages = _fetch_pdf_and_count_num_pages(attachment.url)
                         yield fp.PartialResponse(
-                            text=f"{attachment.name} has {num_pages} pages"
+                            text=f"{attachment.name} has {num_pages} pages.\n"
                         )
                     except FileDownloadError:
                         yield fp.PartialResponse(
                             text="Failed to retrieve the document."
                         )
-                    return
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(allow_attachments=True)
