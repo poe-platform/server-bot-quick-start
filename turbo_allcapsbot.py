@@ -6,7 +6,7 @@ Sample bot that wraps GPT-3.5-Turbo but makes responses use all-caps.
 
 from __future__ import annotations
 
-from typing import AsyncIterable, Optional
+from typing import AsyncIterable
 
 import fastapi_poe as fp
 from modal import App, Image, asgi_app, exit
@@ -29,11 +29,12 @@ REQUIREMENTS = ["fastapi-poe==0.0.47"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 app = App(name="turbo-allcaps-poe", image=image)
 
+
 @app.cls()
 class Model:
     # See https://creator.poe.com/docs/quick-start#integrating-with-poe to find these values.
-    access_key: Optional[str] = None # REPLACE WITH YOUR ACCESS KEY
-    bot_name: Optional[str] = None # REPLACE WITH YOUR BOT NAME
+    access_key: str | None = None  # REPLACE WITH YOUR ACCESS KEY
+    bot_name: str | None = None  # REPLACE WITH YOUR BOT NAME
 
     @exit()
     def sync_settings(self):
@@ -52,11 +53,14 @@ class Model:
     def fastapi_app(self):
         bot = GPT35TurboAllCapsBot()
         if not self.access_key:
-            print("Warning: Running without an access key. Please remember to set it before production.")
+            print(
+                "Warning: Running without an access key. Please remember to set it before production."
+            )
             app = fp.make_app(bot, allow_without_key=True)
         else:
             app = fp.make_app(bot, access_key=self.access_key)
         return app
+
 
 @app.local_entrypoint()
 def main():
