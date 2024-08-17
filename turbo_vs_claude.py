@@ -129,7 +129,7 @@ image = Image.debian_slim().pip_install(*REQUIREMENTS)
 app = App(name="turbo-vs-claude-poe", image=image)
 
 
-@app.cls()
+@app.cls(image=image)
 class Model:
     # Both of these values are optional, but it is strongly recommended to set them.
     # See https://creator.poe.com/docs/quick-start#integrating-with-poe to find these values.

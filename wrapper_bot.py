@@ -64,7 +64,7 @@ image = (
 app = App(name="wrapper-bot-poe", image=image)
 
 
-@app.cls()
+@app.cls(image=image)
 class Model:
     # See https://creator.poe.com/docs/quick-start#integrating-with-poe to find these values.
     access_key: str | None = os.environ["POE_ACCESS_KEY"]
