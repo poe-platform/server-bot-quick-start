@@ -110,7 +110,7 @@ class Model:
             except Exception:
                 print("\n*********** Warning ***********")
                 print(
-                    f"Bot settings sync failed. For more information, see: https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings"
+                    "Bot settings sync failed. For more information, see: https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings"
                 )
                 print("\n*********** Warning ***********")
 
