@@ -7,10 +7,10 @@ Sample bot that wraps OpenAI async API.
 from __future__ import annotations
 
 import os
-from typing import AsyncIterable
+from typing import AsyncIterable, Optional
 
 import fastapi_poe as fp
-from modal import App, Image, asgi_app
+from modal import App, Image, asgi_app, exit
 from openai import AsyncOpenAI
 
 client = AsyncOpenAI()
@@ -61,19 +61,33 @@ image = (
         }
     )
 )
-app = App("wrapper-bot-poe")
+app = App(name="wrapper-bot-poe", image=image)
 
+@app.cls()
+class Model:
+    # See https://creator.poe.com/docs/quick-start#integrating-with-poe to find these values.
+    access_key: Optional[str] =  os.environ["POE_ACCESS_KEY"]
+    bot_name: Optional[str] = None # REPLACE WITH YOUR BOT NAME
 
-@app.function(image=image)
-@asgi_app()
-def fastapi_app():
-    bot = WrapperBot()
-    # Optionally, provide your Poe access key here:
-    # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
-    # 2. We strongly recommend using a key for a production bot to prevent abuse,
-    # but the starter examples disable the key check for convenience.
-    # 3. You can also store your access key on modal.com and retrieve it in this function
-    # by following the instructions at: https://modal.com/docs/guide/secrets
-    POE_ACCESS_KEY = os.environ["POE_ACCESS_KEY"]
-    app = fp.make_app(bot, access_key=POE_ACCESS_KEY)
-    return app
+    @exit()
+    def sync_settings(self):
+        """Syncs bot settings on server shutdown."""
+        if self.bot_name and self.access_key:
+            try:
+                fp.sync_bot_settings(self.bot_name, self.access_key)
+            except Exception:
+                print("\n*********** Warning ***********")
+                print(
+                    f"Bot settings sync failed. For more information, see: https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings"
+                )
+                print("\n*********** Warning ***********")
+
+    @asgi_app()
+    def fastapi_app(self):
+        bot = WrapperBot()
+        app = fp.make_app(bot, access_key=self.access_key)
+        return app
+
+@app.local_entrypoint()
+def main():
+    Model().run.remote()

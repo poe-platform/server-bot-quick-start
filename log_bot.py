@@ -6,11 +6,11 @@ Sample bot that shows the query sent to the bot.
 
 from __future__ import annotations
 
-from typing import AsyncIterable
+from typing import AsyncIterable, Optional
 
 import fastapi_poe as fp
 from devtools import PrettyFormat
-from modal import App, Image, asgi_app
+from modal import App, Image, asgi_app, exit
 
 pformat = PrettyFormat(width=85)
 
@@ -29,20 +29,37 @@ class LogBot(fp.PoeBot):
 
 REQUIREMENTS = ["fastapi-poe==0.0.47", "devtools==0.12.2"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
-app = App("log-bot-poe")
+app = App(name="log-bot-poe", image=image)
 
+@app.cls()
+class Model:
+    # See https://creator.poe.com/docs/quick-start#integrating-with-poe to find these values.
+    access_key: Optional[str] = None # REPLACE WITH YOUR ACCESS KEY
+    bot_name: Optional[str] = None # REPLACE WITH YOUR BOT NAME
 
-@app.function(image=image)
-@asgi_app()
-def fastapi_app():
-    bot = LogBot()
-    # Optionally, provide your Poe access key here:
-    # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
-    # 2. We strongly recommend using a key for a production bot to prevent abuse,
-    # but the starter examples disable the key check for convenience.
-    # 3. You can also store your access key on modal.com and retrieve it in this function
-    # by following the instructions at: https://modal.com/docs/guide/secrets
-    # POE_ACCESS_KEY = ""
-    # app = make_app(bot, access_key=POE_ACCESS_KEY)
-    app = fp.make_app(bot, allow_without_key=True)
-    return app
+    @exit()
+    def sync_settings(self):
+        """Syncs bot settings on server shutdown."""
+        if self.bot_name and self.access_key:
+            try:
+                fp.sync_bot_settings(self.bot_name, self.access_key)
+            except Exception:
+                print("\n*********** Warning ***********")
+                print(
+                    f"Bot settings sync failed. For more information, see: https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings"
+                )
+                print("\n*********** Warning ***********")
+
+    @asgi_app()
+    def fastapi_app(self):
+        bot = LogBot()
+        if not self.access_key:
+            print("Warning: Running without an access key. Please remember to set it before production.")
+            app = fp.make_app(bot, allow_without_key=True)
+        else:
+            app = fp.make_app(bot, access_key=self.access_key)
+        return app
+
+@app.local_entrypoint()
+def main():
+    Model().run.remote()
