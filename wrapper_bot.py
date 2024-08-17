@@ -7,7 +7,7 @@ Sample bot that wraps OpenAI async API.
 from __future__ import annotations
 
 import os
-from typing import AsyncIterable, Optional
+from typing import AsyncIterable
 
 import fastapi_poe as fp
 from modal import App, Image, asgi_app, exit
@@ -63,11 +63,12 @@ image = (
 )
 app = App(name="wrapper-bot-poe", image=image)
 
+
 @app.cls()
 class Model:
     # See https://creator.poe.com/docs/quick-start#integrating-with-poe to find these values.
-    access_key: Optional[str] =  os.environ["POE_ACCESS_KEY"]
-    bot_name: Optional[str] = None # REPLACE WITH YOUR BOT NAME
+    access_key: str | None = os.environ["POE_ACCESS_KEY"]
+    bot_name: str | None = None  # REPLACE WITH YOUR BOT NAME
 
     @exit()
     def sync_settings(self):
@@ -87,6 +88,7 @@ class Model:
         bot = WrapperBot()
         app = fp.make_app(bot, access_key=self.access_key)
         return app
+
 
 @app.local_entrypoint()
 def main():
