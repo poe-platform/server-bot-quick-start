@@ -22,7 +22,7 @@ image = Image.debian_slim().pip_install(*REQUIREMENTS)
 app = App(name="image-response-poe", image=image)
 
 
-@app.cls()
+@app.cls(image=image)
 class Model:
     # See https://creator.poe.com/docs/quick-start#integrating-with-poe to find these values.
     access_key: str | None = None  # REPLACE WITH YOUR ACCESS KEY
