@@ -11,7 +11,7 @@ from typing import AsyncIterable
 
 import fastapi_poe as fp
 from devtools import PrettyFormat
-from modal import App, Image, asgi_app
+from modal import App, Image, asgi_app, exit
 
 pformat = PrettyFormat(width=85)
 

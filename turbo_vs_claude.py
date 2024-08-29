@@ -12,7 +12,7 @@ from collections import defaultdict
 from typing import AsyncIterable, AsyncIterator
 
 import fastapi_poe as fp
-from modal import App, Image, asgi_app
+from modal import App, Image, asgi_app, exit
 
 
 async def combine_streams(

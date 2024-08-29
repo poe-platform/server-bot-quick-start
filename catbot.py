@@ -13,7 +13,7 @@ import asyncio
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import App, Image, asgi_app
+from modal import App, Image, asgi_app, exit
 
 
 class CatBot(fp.PoeBot):

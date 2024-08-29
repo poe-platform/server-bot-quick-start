@@ -4,7 +4,7 @@ import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import App, Image, Mount, asgi_app
+from modal import App, Image, Mount, asgi_app, exit
 
 
 class VideoBot(fp.PoeBot):
@@ -25,7 +25,11 @@ image = (
     .pip_install(*REQUIREMENTS)
     .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
 )
-app = App("video-bot")
+app = App(
+    name="video-bot",
+    image=image,
+    mounts=[Mount.from_local_dir("./assets", remote_path="/root/assets")],
+)
 
 
 @app.function(

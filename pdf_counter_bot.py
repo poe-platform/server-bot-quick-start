@@ -4,7 +4,7 @@ from typing import AsyncIterable
 
 import fastapi_poe as fp
 import requests
-from modal import App, Image, asgi_app
+from modal import App, Image, asgi_app, exit
 from PyPDF2 import PdfReader
 
 
