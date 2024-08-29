@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import App, Image, asgi_app, exit
+from modal import App, Image, asgi_app
 
 IMAGE_URL = (
     "https://images.pexels.com/photos/46254/leopard-wildcat-big-cat-botswana-46254.jpeg"

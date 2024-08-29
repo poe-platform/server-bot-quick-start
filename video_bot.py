@@ -4,7 +4,7 @@ import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import App, Image, Mount, asgi_app, exit
+from modal import App, Image, Mount, asgi_app
 
 
 class VideoBot(fp.PoeBot):

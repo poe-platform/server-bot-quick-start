@@ -10,7 +10,7 @@ import json
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import App, Image, asgi_app, exit
+from modal import App, Image, asgi_app
 
 
 def get_current_weather(location, unit="fahrenheit"):

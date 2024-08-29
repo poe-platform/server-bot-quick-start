@@ -10,7 +10,7 @@ import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import App, Image, asgi_app, exit
+from modal import App, Image, asgi_app
 from openai import AsyncOpenAI
 
 client = AsyncOpenAI()
