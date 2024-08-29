@@ -32,7 +32,7 @@ class PromptBot(fp.PoeBot):
         return fp.SettingsResponse(server_bot_dependencies={"Claude-3-Haiku": 1})
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.47"]
+REQUIREMENTS = ["fastapi-poe==0.0.48"]
 image = Image.debian_slim().pip_install(*REQUIREMENTS)
 app = App("prompt-bot-poe")
 
@@ -41,13 +41,7 @@ app = App("prompt-bot-poe")
 @asgi_app()
 def fastapi_app():
     bot = PromptBot()
-    # Optionally, provide your Poe access key here:
-    # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
-    # 2. We strongly recommend using a key for a production bot to prevent abuse,
-    # but the starter examples disable the key check for convenience.
-    # 3. You can also store your access key on modal.com and retrieve it in this function
-    # by following the instructions at: https://modal.com/docs/guide/secrets
-    # POE_ACCESS_KEY = ""
-    # app = make_app(bot, access_key=POE_ACCESS_KEY)
+    # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
+    # app = fp.make_app(bot, access_key=<YOUR_ACCESS_KEY>, bot_name=<YOUR_BOT_NAME>)
     app = fp.make_app(bot, allow_without_key=True)
     return app

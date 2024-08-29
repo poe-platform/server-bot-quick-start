@@ -28,15 +28,6 @@ The SCM represents a simple cat with just a few behaviors:
 - The cat can count. If you send a message that contains "count", he replies with "1",
   waits a second, then replaces his response with "2", and so on until 10. If you add
   "quickly", he doesn't sleep while counting.
-- If you give him scratches (by sending a message containing "scratch"), he gets so
-  excited that he forgets how the Poe protocol works, and sends back an event with type
-  "purr". (Since this is not allowed by the protocol, it will trigger a call to the
-  `report_error` endpoint from the Poe server.)
 - If you call him a dog, he doesn't want to talk to you any more. If the message
   contains "dog", he turns off suggested replies.
-- If you give him a toy, he keeps hitting it, more than is allowed by the Poe protocol
-  spec. If a message contains "toy", he sends more than 1000 events that contain the
-  text "hit ".
-- If he gets on a bed, he doesn't stop sleeping. If a message contains "bed", he sends a
-  "zzz" response with over 10000 letters, more than the Poe protocol allows.
 - Otherwise, he sleeps. He responds with "zzz".
