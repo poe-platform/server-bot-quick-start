@@ -30,3 +30,4 @@ The SCM represents a simple cat with just a few behaviors:
   "quickly", he doesn't sleep while counting.
 - If you call him a dog, he doesn't want to talk to you any more. If the message
   contains "dog", he turns off suggested replies.
+- Otherwise, he sleeps. He responds with "zzz".

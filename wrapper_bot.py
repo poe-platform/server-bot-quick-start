@@ -10,7 +10,7 @@ import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
-from modal import App, Image, asgi_app, exit
+from modal import App, Image, asgi_app
 from openai import AsyncOpenAI
 
 client = AsyncOpenAI()
@@ -50,7 +50,7 @@ class WrapperBot(fp.PoeBot):
             yield msg
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.47", "openai"]
+REQUIREMENTS = ["fastapi-poe==0.0.48", "openai"]
 image = (
     Image.debian_slim()
     .pip_install(*REQUIREMENTS)
@@ -61,35 +61,15 @@ image = (
         }
     )
 )
-app = App(name="wrapper-bot-poe", image=image)
+app = App("wrapper-bot-poe")
 
 
-@app.cls(image=image)
-class Model:
-    # See https://creator.poe.com/docs/quick-start#integrating-with-poe to find these values.
-    access_key: str | None = os.environ["POE_ACCESS_KEY"]
-    bot_name: str | None = None  # REPLACE WITH YOUR BOT NAME
-
-    @exit()
-    def sync_settings(self):
-        """Syncs bot settings on server shutdown."""
-        if self.bot_name and self.access_key:
-            try:
-                fp.sync_bot_settings(self.bot_name, self.access_key)
-            except Exception:
-                print("\n*********** Warning ***********")
-                print(
-                    "Bot settings sync failed. For more information, see: https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings"
-                )
-                print("\n*********** Warning ***********")
-
-    @asgi_app()
-    def fastapi_app(self):
-        bot = WrapperBot()
-        app = fp.make_app(bot, access_key=self.access_key)
-        return app
-
-
-@app.local_entrypoint()
-def main():
-    Model().run.remote()
+@app.function(image=image)
+@asgi_app()
+def fastapi_app():
+    bot = WrapperBot()
+    POE_ACCESS_KEY = os.environ["POE_ACCESS_KEY"]
+    # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
+    # app = fp.make_app(bot, access_key=POE_ACCESS_KEY, bot_name=<YOUR_BOT_NAME>)
+    app = fp.make_app(bot, access_key=POE_ACCESS_KEY)
+    return app
