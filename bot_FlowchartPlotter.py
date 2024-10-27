@@ -62,7 +62,7 @@ See examples [here](https://docs.mermaidchart.com/mermaid/intro).
 """.strip()
 
 
-class EchoBot(PoeBot):
+class FlowChartPlotterBot(PoeBot):
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[PartialResponse]:
@@ -132,44 +132,45 @@ class EchoBot(PoeBot):
 image = (
     Image.debian_slim()
     # puppeteer requirements
-    .apt_install("ca-certificates")
-    .apt_install("fonts-liberation")
-    .apt_install("libasound2")
-    .apt_install("libatk-bridge2.0-0")
-    .apt_install("libatk1.0-0")
-    .apt_install("libc6")
-    .apt_install("libcairo2")
-    .apt_install("libcups2")
-    .apt_install("libdbus-1-3")
-    .apt_install("libexpat1")
-    .apt_install("libfontconfig1")
-    .apt_install("libgbm1")
-    .apt_install("libgcc1")
-    .apt_install("libglib2.0-0")
-    .apt_install("libgtk-3-0")
-    .apt_install("libnspr4")
-    .apt_install("libnss3")
-    .apt_install("libpango-1.0-0")
-    .apt_install("libpangocairo-1.0-0")
-    .apt_install("libstdc++6")
-    .apt_install("libx11-6")
-    .apt_install("libx11-xcb1")
-    .apt_install("libxcb1")
-    .apt_install("libxcomposite1")
-    .apt_install("libxcursor1")
-    .apt_install("libxdamage1")
-    .apt_install("libxext6")
-    .apt_install("libxfixes3")
-    .apt_install("libxi6")
-    .apt_install("libxrandr2")
-    .apt_install("libxrender1")
-    .apt_install("libxss1")
-    .apt_install("libxtst6")
-    .apt_install("lsb-release")
-    .apt_install("wget")
-    .apt_install("xdg-utils")
-    # mermaid requirements
-    .apt_install("curl")
+    .apt_install(
+        "ca-certificates",
+        "fonts-liberation",
+        "libasound2",
+        "libatk-bridge2.0-0",
+        "libatk1.0-0",
+        "libc6",
+        "libcairo2",
+        "libcups2",
+        "libdbus-1-3",
+        "libexpat1",
+        "libfontconfig1",
+        "libgbm1",
+        "libgcc1",
+        "libglib2.0-0",
+        "libgtk-3-0",
+        "libnspr4",
+        "libnss3",
+        "libpango-1.0-0",
+        "libpangocairo-1.0-0",
+        "libstdc++6",
+        "libx11-6",
+        "libx11-xcb1",
+        "libxcb1",
+        "libxcomposite1",
+        "libxcursor1",
+        "libxdamage1",
+        "libxext6",
+        "libxfixes3",
+        "libxi6",
+        "libxrandr2",
+        "libxrender1",
+        "libxss1",
+        "libxtst6",
+        "lsb-release",
+        "wget",
+        "xdg-utils",
+        "curl",
+    )  # mermaid requirements
     .run_commands("curl -sL https://deb.nodesource.com/setup_18.x | bash -")
     .apt_install("nodejs")
     .run_commands("npm install -g @mermaid-js/mermaid-cli")
@@ -180,7 +181,7 @@ image = (
 
 stub = Stub("poe-bot-FlowChartPlotter")
 
-bot = EchoBot()
+bot = FlowChartPlotterBot()
 
 
 @stub.function(image=image, container_idle_timeout=1200)
