@@ -16,10 +16,9 @@ from typing import AsyncIterable
 import fastapi_poe as fp
 import pandas as pd
 from fastapi_poe.types import PartialResponse, ProtocolMessage
-from modal import Dict, Image, Stub, asgi_app
+from modal import Dict
 
-stub = Stub("poe-bot-KnowledgeTest")
-stub.my_dict = Dict.new()
+my_dict = Dict.from_name("dict-KnowledgeTest", create_if_missing=True)
 
 df = pd.read_csv("mmlu.csv")
 # using https://huggingface.co/datasets/cais/mmlu
@@ -100,7 +99,7 @@ def get_conversation_info_key(conversation_id):
     return f"KnowledgeTest-question-{conversation_id}"
 
 
-class GPT35TurboAllCapsBot(fp.PoeBot):
+class KnowledgeTestBot(fp.PoeBot):
     async def get_response(
         self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
@@ -110,13 +109,13 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
 
         # reset if the user passes or asks for the next statement
         if last_user_reply in (NEXT_STATEMENT, PASS_STATEMENT):
-            if conversation_info_key in stub.my_dict:
-                stub.my_dict.pop(conversation_info_key)
+            if conversation_info_key in my_dict:
+                my_dict.pop(conversation_info_key)
 
         # for new conversations, sample a problem
-        if conversation_info_key not in stub.my_dict:
+        if conversation_info_key not in my_dict:
             question_info = df.sample(n=1).to_dict(orient="records")[0]
-            stub.my_dict[conversation_info_key] = question_info
+            my_dict[conversation_info_key] = question_info
 
             yield self.text_event(
                 TEMPLATE_STARTING_REPLY.format(
@@ -142,7 +141,7 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             return
 
         # retrieve the previously cached question
-        question_info = stub.my_dict[conversation_info_key]
+        question_info = my_dict[conversation_info_key]
 
         # continue as per normal
         request.query = [
@@ -191,27 +190,3 @@ class GPT35TurboAllCapsBot(fp.PoeBot):
             server_bot_dependencies={"ChatGPT": 1, "GPT-3.5-Turbo": 1},
             introduction_message="Say 'start' to get a knowledge question.",
         )
-
-
-REQUIREMENTS = ["fastapi-poe==0.0.24", "pandas"]
-image = (
-    Image.debian_slim()
-    .pip_install(*REQUIREMENTS)
-    .copy_local_file("mmlu.csv", "/root/mmlu.csv")
-)
-
-
-@stub.function(image=image, container_idle_timeout=1200)
-@asgi_app()
-def fastapi_app():
-    bot = GPT35TurboAllCapsBot()
-    # Optionally, provide your Poe access key here:
-    # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
-    # 2. We strongly recommend using a key for a production bot to prevent abuse,
-    # but the starter examples disable the key check for convenience.
-    # 3. You can also store your access key on modal.com and retrieve it in this function
-    # by following the instructions at: https://modal.com/docs/guide/secrets
-    # POE_ACCESS_KEY = ""
-    # app = make_app(bot, access_key=POE_ACCESS_KEY)
-    app = fp.make_app(bot, allow_without_key=True)
-    return app

@@ -10,8 +10,10 @@ from wrapper_bot import WrapperBot
 from bot_CafeMaid import CafeMaidBot
 from bot_ChineseStatement import ChineseStatementBot
 from bot_ChineseVocab import ChineseVocabBot
-from bot_CmdLine import CmdLineBot
 from bot_EnglishDiffBot import EnglishDiffBot
+from bot_ImageRouter import ImageRouterBot
+from bot_JapaneseKana import JapaneseKanaBot
+from bot_KnowledgeTest import KnowledgeTestBot
 
 
 REQUIREMENTS = [
@@ -29,7 +31,9 @@ image = (
         }
     )
     .copy_local_file("chinese_sentences.txt", "/root/chinese_sentences.txt")  # ChineseStatement
-    .copy_local_file("chinese_words.csv", "/root/chinese_words.csv")
+    .copy_local_file("chinese_words.csv", "/root/chinese_words.csv")  # ChineseVocab
+    .copy_local_file("japanese_kana.csv", "/root/japanese_kana.csv")  # JapaneseKana
+    .copy_local_file("mmlu.csv", "/root/mmlu.csv")  # KnowledgeTest
 )
 app = App("wrapper-bot-poe")
 
@@ -46,8 +50,10 @@ def fastapi_app():
             CafeMaidBot(path="/CafeMaid", access_key=POE_ACCESS_KEY),
             ChineseStatementBot(path="/ChineseStatement", access_key=POE_ACCESS_KEY),
             ChineseVocabBot(path="/ChineseVocab", access_key=POE_ACCESS_KEY),
-            CmdLineBot(path="/CmdLine", access_key=POE_ACCESS_KEY),
             EnglishDiffBot(path="/EnglishDiffBot", access_key=POE_ACCESS_KEY),
+            ImageRouterBot(path="/ImageRouter", access_key=POE_ACCESS_KEY),
+            JapaneseKanaBot(path="/JapaneseKana", access_key=POE_ACCESS_KEY),
+            KnowledgeTestBot(path="/KnowledgeTest", access_key=POE_ACCESS_KEY),
         ],
     )
     return app

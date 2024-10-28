@@ -3,3 +3,4 @@ __pycache__/
 node_modules
 app.json
 !japanese_kana.csv
+!mmlu.csv
