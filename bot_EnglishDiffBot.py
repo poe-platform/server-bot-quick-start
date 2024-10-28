@@ -80,7 +80,7 @@ def markdown_diff(str1, str2, is_incomplete=False):
     return " ".join(result)
 
 
-class EchoBot(PoeBot):
+class EnglishDiffBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
         user_statement = query.query[-1].content
         print("user_statement", user_statement)
@@ -120,19 +120,3 @@ class EchoBot(PoeBot):
             allow_attachments=False,
             introduction_message="This bot will reply you the statement you made, with the language corrected.",
         )
-
-
-bot = EchoBot()
-
-image = Image.debian_slim().pip_install(
-    "fastapi-poe==0.0.23", "huggingface-hub==0.16.4"
-)
-
-stub = Stub("poe-bot-quickstart")
-
-
-@stub.function(image=image)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, allow_without_key=True)
-    return app

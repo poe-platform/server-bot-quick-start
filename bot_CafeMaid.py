@@ -110,7 +110,7 @@ def stringify_conversation(messages: list[ProtocolMessage]) -> str:
     return stringified_messages
 
 
-class EchoBot(PoeBot):
+class CafeMaidBot(PoeBot):
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[PartialResponse]:
@@ -150,7 +150,7 @@ class EchoBot(PoeBot):
             )
         ]
         yield self.text_event("\n\n")
-        async for msg in stream_request(request, "DALL-E-3", request.access_key):
+        async for msg in stream_request(request, "FLUX-schnell", request.access_key):
             if "Generating image" not in msg.text:
                 msg.is_replace_response = False
                 yield msg
@@ -173,24 +173,8 @@ class EchoBot(PoeBot):
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            server_bot_dependencies={"DALL-E-3": 1, "GPT-4": 2, "ChatGPT": 1},
+            server_bot_dependencies={"FLUX-schnell": 1, "GPT-4": 2, "ChatGPT": 1},
             introduction_message=INTRODUCTION_MESSAGE,
         )
 
 
-image = (
-    Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.23")
-    .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
-)
-
-stub = Stub("poe-bot-quickstart")
-
-bot = EchoBot()
-
-
-@stub.function(image=image)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, allow_without_key=True)
-    return app
