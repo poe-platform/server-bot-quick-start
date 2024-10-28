@@ -111,7 +111,7 @@ def extract_readable_text(url):
         return None
 
 
-class EchoBot(PoeBot):
+class PromotedAnswerBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
         print("user_statement", query.query[-1].content)
 
@@ -154,17 +154,3 @@ class EchoBot(PoeBot):
         )
 
 
-bot = EchoBot()
-
-image = Image.debian_slim().pip_install(
-    "fastapi-poe==0.0.23", "requests==2.31.0", "beautifulsoup4==4.10.0"
-)
-
-stub = Stub("poe-bot-quickstart")
-
-
-@stub.function(image=image)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, allow_without_key=True)
-    return app

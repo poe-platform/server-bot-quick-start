@@ -14,12 +14,16 @@ from bot_EnglishDiffBot import EnglishDiffBot
 from bot_ImageRouter import ImageRouterBot
 from bot_JapaneseKana import JapaneseKanaBot
 from bot_KnowledgeTest import KnowledgeTestBot
+from bot_ModelRouter import ModelRouterBot
+from bot_PromotedAnswer import PromotedAnswerBot
 
 
 REQUIREMENTS = [
     "fastapi-poe==0.0.48", 
-    "openai",
-    "pandas",
+    "openai",  # WrapperBotDemo
+    "pandas",  # which version?
+    "requests==2.31.0",  # PromotedAnswerBot
+    "beautifulsoup4==4.10.0",  # PromotedAnswerBot
 ]
 image = (
     Image.debian_slim()
@@ -54,6 +58,8 @@ def fastapi_app():
             ImageRouterBot(path="/ImageRouter", access_key=POE_ACCESS_KEY),
             JapaneseKanaBot(path="/JapaneseKana", access_key=POE_ACCESS_KEY),
             KnowledgeTestBot(path="/KnowledgeTest", access_key=POE_ACCESS_KEY),
+            ModelRouterBot(path="/ModelRouter", access_key=POE_ACCESS_KEY),
+            PromotedAnswerBot(path="/PromotedAnswer", access_key=POE_ACCESS_KEY),
         ],
     )
     return app
