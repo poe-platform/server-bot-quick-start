@@ -17,7 +17,7 @@ from typing import AsyncIterable
 
 import modal
 import requests
-from fastapi_poe import PoeBot, make_app
+from fastapi_poe import PoeBot
 from fastapi_poe.client import MetaMessage, stream_request
 from fastapi_poe.types import (
     PartialResponse,
@@ -26,7 +26,7 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
-from modal import App, Image, asgi_app, Sandbox
+from modal import Image, Sandbox
 
 
 def extract_code(reply):
@@ -146,18 +146,54 @@ If there is an issue, you will fix the Python code.
 Otherwise, conclude with only text in plaintext. Do NOT produce the final version of the script.
 """
 
-app = App("PythonAgent")
 
-
-def wrap_session(code, conversation_id):
-    # the wrapper code
-    # - load session with dill (for the same conversation)
-    # - execute the code
-    # - save to image.png on plt.plot() and plt.show()
-    # - save session with dill (if execution is successful)
-
-    return CODE_WITH_WRAPPERS.format(code=code, conversation_id=conversation_id)
-
+IMAGE_EXEC = (
+    Image
+    .debian_slim()
+    .pip_install(
+        "ipython",
+        "scipy",
+        "matplotlib",
+        "scikit-learn",
+        "pandas",
+        "ortools",
+        "openai",
+        "requests",
+        "beautifulsoup4",
+        "newspaper3k",
+        "XlsxWriter",
+        "docx2txt",
+        "markdownify",
+        "pdfminer.six",
+        "Pillow",
+        "sortedcontainers",
+        "intervaltree",
+        "geopandas",
+        "basemap",
+        "tiktoken",
+        "basemap-data-hires",
+        "yfinance",
+        "dill",
+        "seaborn",
+        "openpyxl",
+        "cartopy",
+        "sympy",
+    )
+    .pip_install(
+        ["torch", "torchvision", "torchaudio"],
+        index_url="https://download.pytorch.org/whl/cpu",
+    )
+    .pip_install(
+        "tensorflow",
+        "keras",
+        "nltk",
+        "spacy",
+        "opencv-python-headless",
+        "feedparser",
+        "wordcloud",
+        "opencv-python",
+    )
+)
 
 class PythonAgentBot(PoeBot):
     prompt_bot = "GPT-4o"
@@ -166,6 +202,10 @@ class PythonAgentBot(PoeBot):
     allow_attachments = True
     system_prompt_role = "system"  # Claude-3 does not allow system prompt yet
     stateful = True
+    python_agent_system_prompt = PYTHON_AGENT_SYSTEM_PROMPT
+    code_with_wrappers = CODE_WITH_WRAPPERS
+    simulated_user_suffix_prompt = SIMULATED_USER_SUFFIX_PROMPT
+    image_exec = IMAGE_EXEC
 
     async def get_response(
         self, request: QueryRequest
@@ -176,7 +216,7 @@ class PythonAgentBot(PoeBot):
         print(last_message)
 
         PYTHON_AGENT_SYSTEM_MESSAGE = ProtocolMessage(
-            role=self.system_prompt_role, content=PYTHON_AGENT_SYSTEM_PROMPT
+            role=self.system_prompt_role, content=self.python_agent_system_prompt
         )
 
         request.query = [PYTHON_AGENT_SYSTEM_MESSAGE] + request.query
@@ -186,7 +226,7 @@ class PythonAgentBot(PoeBot):
         for query in request.query:
             query.message_id = ""
 
-        nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id}", create_if_missing=True)
+        nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id[::-1][:32][::-1]}", create_if_missing=True)
 
         for query in request.query:
             for attachment in query.attachments:
@@ -234,7 +274,7 @@ class PythonAgentBot(PoeBot):
             # prepare code for execution
             print("code")
             print(code)
-            wrapped_code = wrap_session(code, conversation_id=request.conversation_id)
+            wrapped_code = self.code_with_wrappers.format(code=code, conversation_id=request.conversation_id)
 
             # upload python script
             with open(f"{request.conversation_id}.py", "w") as f:
@@ -248,7 +288,7 @@ class PythonAgentBot(PoeBot):
                 "bash",
                 "-c",
                 f"cd /cache && python {request.conversation_id}.py",
-                image=image_exec,
+                image=self.image_exec,
                 network_file_systems={"/cache": nfs},
             )
             sb.wait()
@@ -329,7 +369,7 @@ class PythonAgentBot(PoeBot):
                         SIMULATED_USER_SUFFIX_IMAGE_NOT_FOUND
                     )
 
-            current_user_simulated_reply += SIMULATED_USER_SUFFIX_PROMPT
+            current_user_simulated_reply += self.simulated_user_suffix_prompt
 
             # TODO when feature allows, add image to ProtocolMessage
             message = ProtocolMessage(role="user", content=current_user_simulated_reply)
@@ -342,55 +382,6 @@ class PythonAgentBot(PoeBot):
             introduction_message="",
             enable_image_comprehension=True,
         )
-
-
-image_exec = (
-    Image
-    .debian_slim()
-    .pip_install(
-        "ipython",
-        "scipy",
-        "matplotlib",
-        "scikit-learn",
-        "pandas",
-        "ortools",
-        "openai",
-        "requests",
-        "beautifulsoup4",
-        "newspaper3k",
-        "XlsxWriter",
-        "docx2txt",
-        "markdownify",
-        "pdfminer.six",
-        "Pillow",
-        "sortedcontainers",
-        "intervaltree",
-        "geopandas",
-        "basemap",
-        "tiktoken",
-        "basemap-data-hires",
-        "yfinance",
-        "dill",
-        "seaborn",
-        "openpyxl",
-        "cartopy",
-    )
-    .pip_install(
-        ["torch", "torchvision", "torchaudio"],
-        index_url="https://download.pytorch.org/whl/cpu",
-    )
-    .pip_install(
-        "tensorflow",
-        "keras",
-        "nltk",
-        "spacy",
-        "opencv-python-headless",
-        "feedparser",
-        "sympy",
-        "wordcloud",
-        "opencv-python",
-    )
-)
 
 
 bot = PythonAgentBot()

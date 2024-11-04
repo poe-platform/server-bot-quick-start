@@ -18,7 +18,7 @@ from bot_ModelRouter import ModelRouterBot
 from bot_PromotedAnswer import PromotedAnswerBot
 from bot_PythonAgent import PythonAgentBot
 from bot_PythonAgentEx import PythonAgentExBot
-
+from bot_H1B import H1BBot
 
 REQUIREMENTS = [
     "fastapi-poe==0.0.48", 
@@ -40,6 +40,7 @@ image = (
     .copy_local_file("chinese_words.csv", "/root/chinese_words.csv")  # ChineseVocab
     .copy_local_file("japanese_kana.csv", "/root/japanese_kana.csv")  # JapaneseKana
     .copy_local_file("mmlu.csv", "/root/mmlu.csv")  # KnowledgeTest
+    .copy_local_file("h1b.csv", "/root/h1b.csv")  # H-1B
 )
 app = App("wrapper-bot-poe")
 
@@ -64,6 +65,7 @@ def fastapi_app():
             PromotedAnswerBot(path="/PromotedAnswer", access_key=POE_ACCESS_KEY),
             PythonAgentBot(path="/PythonAgent", access_key=POE_ACCESS_KEY),
             PythonAgentExBot(path="/PythonAgentEx", access_key=POE_ACCESS_KEY),
+            H1BBot(path="/H-1B", access_key=POE_ACCESS_KEY),
         ],
     )
     return app

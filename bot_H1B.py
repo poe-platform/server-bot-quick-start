@@ -1,6 +1,6 @@
 """
 
-BOT_NAME="H-1B"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
+BOT_NAME="H1B"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
 
 Test message:
 How many h1b1 were issued?
@@ -11,7 +11,7 @@ import os
 
 import modal
 from fastapi_poe import make_app
-from modal import Stub, asgi_app
+from modal import Stub, asgi_app, Image, App
 
 import bot_PythonAgent
 from bot_PythonAgent import PythonAgentBot
@@ -19,19 +19,19 @@ from bot_PythonAgent import PythonAgentBot
 # https://modalbetatesters.slack.com/archives/C031Z7H15DG/p1675177408741889?thread_ts=1675174647.477169&cid=C031Z7H15DG
 modal.app._is_container_app = False
 
-bot_PythonAgent.PYTHON_AGENT_SYSTEM_PROMPT = """
-You have access to the H-1B dataset in df.csv.
+PYTHON_AGENT_SYSTEM_PROMPT = """
+You have access to the H-1B dataset in h1b.csv.
 You write the Python code to answer my queries, whenever possible.
 
 When you return Python code
 - Encapsulate all Python code within triple backticks (i.e ```python) with newlines.
 - The Python code should either print something or plot something
 - When filtering rows by <class 'str'> columns, always use .str.contains(<string>, case=False) instead of ==
-- The Python code should start with `df = pd.read_csv('/df.csv')` (NOTE: this is in the root directory /)
+- The Python code should start with `df = pd.read_csv('/h1b.csv')` (NOTE: this is in the root directory /)
 
-df.csv contains information about Labor application information from H-1B, H-1B1, and E-3 Programs.
+h1b.csv contains information about Labor application information from H-1B, H-1B1, and E-3 Programs.
 
-df.csv contains the following columns
+h1b.csv contains the following columns
 - 'CASE_NUMBER'
 - 'CASE_STATUS',
 - 'RECEIVED_DATE'
@@ -213,7 +213,7 @@ Name: QUARTER, type: <class 'numpy.int64'>
 #     print()
 
 
-bot_PythonAgent.CODE_WITH_WRAPPERS = """\
+CODE_WITH_WRAPPERS = """\
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import savefig
@@ -237,31 +237,56 @@ plt.savefig = save_image('image.png')(plt.savefig)
 {code}
 """
 
-bot_PythonAgent.SIMULATED_USER_SUFFIX_PROMPT = """
+SIMULATED_USER_SUFFIX_PROMPT = """
 If there is an issue, you will fix the Python code.
 Otherwise, provide a brief and concise summary, WITHOUT repeating the output.
 Write in normal markdown.
 """
 
-
-bot = PythonAgentBot()
-bot.prompt_bot = "Claude-3-Sonnet"
-bot.code_iteration_limit = 3
-bot.logit_bias = {}
-bot.allow_attachments = False
-
-
-stub = Stub("poe-bot-quickstart")
-
-image_bot = bot_PythonAgent.image_bot.copy_local_file("df.csv", "/root/df.csv")
-
-bot_PythonAgent.image_exec = bot_PythonAgent.image_exec.copy_local_file(
-    "df.csv", "df.csv"
+IMAGE_EXEC = (
+    Image
+    .debian_slim()
+    .pip_install(
+        "ipython",
+        "scipy",
+        "matplotlib",
+        "scikit-learn",
+        "pandas",
+        "ortools",
+        "openai",
+        "requests",
+        "beautifulsoup4",
+        "newspaper3k",
+        "XlsxWriter",
+        "docx2txt",
+        "markdownify",
+        "pdfminer.six",
+        "Pillow",
+        "sortedcontainers",
+        "intervaltree",
+        "geopandas",
+        "basemap",
+        "tiktoken",
+        "basemap-data-hires",
+        "yfinance",
+        "dill",
+        "seaborn",
+        "openpyxl",
+        "cartopy",
+        "wordcloud",
+    )
+    .copy_local_file(
+        "h1b.csv", "h1b.csv"
+    )
 )
 
 
-@stub.function(image=image_bot, container_idle_timeout=1200)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
-    return app
+class H1BBot(PythonAgentBot):
+    prompt_bot = "Claude-3.5-Sonnet"
+    code_iteration_limit = 3
+    logit_bias = {}
+    allow_attachments = False
+    python_agent_system_prompt = PYTHON_AGENT_SYSTEM_PROMPT
+    code_with_wrappers = CODE_WITH_WRAPPERS
+    simulated_user_suffix_prompt = SIMULATED_USER_SUFFIX_PROMPT
+    image_exec = IMAGE_EXEC
