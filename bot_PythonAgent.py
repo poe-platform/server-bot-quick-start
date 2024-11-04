@@ -192,7 +192,7 @@ class PythonAgentBot(PoeBot):
         try:
             vol = modal.NetworkFileSystem.lookup(f"vol-{request.user_id}")
         except Exception:
-            nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
+            nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id}", create_if_missing=True)
             sb = app.spawn_sandbox(
                 "bash", "-c", "cd /cache", network_file_systems={"/cache": nfs}
             )
@@ -255,7 +255,7 @@ class PythonAgentBot(PoeBot):
             )
 
             # execute code
-            nfs = modal.NetworkFileSystem.persisted(f"vol-{request.user_id}")
+            nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id}", create_if_missing=True)
             sb = app.spawn_sandbox(
                 "bash",
                 "-c",
@@ -277,7 +277,6 @@ class PythonAgentBot(PoeBot):
                 print(error)
 
             current_user_simulated_reply = ""
-            file_url = ""
             if output and error:
                 yield PartialResponse(
                     text=textwrap.dedent(f"\n\n```output\n{output}```\n\n")
@@ -332,9 +331,6 @@ class PythonAgentBot(PoeBot):
                     )
                     vol.remove_file("image.png")
 
-                f = modal.Function.lookup("function-upload-shared", "upload_file")
-                file_url = f.remote(image_data, "image.png")  # need async await?
-
             yield self.text_event("\n")
 
             if image_data is not None:
@@ -347,11 +343,8 @@ class PythonAgentBot(PoeBot):
 
             current_user_simulated_reply += SIMULATED_USER_SUFFIX_PROMPT
 
+            # TODO when feature allows, add image to ProtocolMessage
             message = ProtocolMessage(role="user", content=current_user_simulated_reply)
-            if file_url:
-                message.attachments = [
-                    Attachment(content_type="image/png", url=file_url, name="image.png")
-                ]
             request.query.append(message)
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
@@ -376,50 +369,52 @@ image_bot = (
     )
 )
 
-image_exec = Image.debian_slim().pip_install(
-    "fastapi-poe==0.0.23",
-    "huggingface-hub==0.16.4",
-    "ipython",
-    "scipy",
-    "matplotlib",
-    "scikit-learn",
-    "pandas==1.3.2",
-    "ortools",
-    "torch",
-    "torchvision",
-    "tensorflow",
-    "spacy",
-    "transformers",
-    "opencv-python-headless",
-    "nltk",
-    "openai",
-    "requests",
-    "beautifulsoup4",
-    "newspaper3k",
-    "feedparser",
-    "sympy",
-    "tensorflow",
-    "cartopy",
-    "wordcloud",
-    "gensim",
-    "keras",
-    "librosa",
-    "XlsxWriter",
-    "docx2txt",
-    "markdownify",
-    "pdfminer.six",
-    "Pillow",
-    "opencv-python",
-    "sortedcontainers",
-    "intervaltree",
-    "geopandas",
-    "basemap",
-    "tiktoken",
-    "basemap-data-hires",
-    "yfinance",
-    "dill",
-    "seaborn",
-    "openpyxl",
+image_exec = (
+    Image
+    .debian_slim()
+    .pip_install(
+        "ipython",
+        "scipy",
+        "matplotlib",
+        "scikit-learn",
+        "pandas",
+        "ortools",
+        "openai",
+        "requests",
+        "beautifulsoup4",
+        "newspaper3k",
+        "XlsxWriter",
+        "docx2txt",
+        "markdownify",
+        "pdfminer.six",
+        "Pillow",
+        "sortedcontainers",
+        "intervaltree",
+        "geopandas",
+        "basemap",
+        "tiktoken",
+        "basemap-data-hires",
+        "yfinance",
+        "dill",
+        "seaborn",
+        "openpyxl",
+        "cartopy",
+    )
+    .pip_install(
+        ["torch", "torchvision", "torchaudio"],
+        index_url="https://download.pytorch.org/whl/cpu",
+    )
+    .pip_install(
+        "tensorflow",
+        "keras",
+        "nltk",
+        "spacy",
+        "opencv-python-headless",
+        "feedparser",
+        "sympy",
+        "wordcloud",
+        "opencv-python",
+    )
 )
 
 
