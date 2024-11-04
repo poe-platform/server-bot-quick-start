@@ -29,10 +29,15 @@ from fastapi_poe.types import (
 from modal import Image, Sandbox
 
 
-def extract_code(reply):
+def extract_code(text):
+    pattern = r"\n```python([\s\S]*?)\n```"
+    matches = re.findall(pattern, "\n" + text)
+    if matches:
+        return "\n\n".join(matches)
+
     pattern = r"```python([\s\S]*?)```"
-    matches = re.findall(pattern, reply)
-    return "\n\n".join(matches)
+    matches = re.findall(pattern, "\n" + text)
+    return "\n\n".join(textwrap.dedent(match) for match in matches)
 
 
 PYTHON_AGENT_SYSTEM_PROMPT = """
@@ -280,14 +285,14 @@ class PythonAgentBot(PoeBot):
             with open(f"{request.conversation_id}.py", "w") as f:
                 f.write(wrapped_code)
             nfs.add_local_file(
-                f"{request.conversation_id}.py", f"{request.conversation_id}.py"
+                f"{request.conversation_id}.py", f"{request.conversation_id[::-1][:32][::-1]}.py"
             )
 
             # execute code
             sb = Sandbox.create(
                 "bash",
                 "-c",
-                f"cd /cache && python {request.conversation_id}.py",
+                f"cd /cache && python {request.conversation_id[::-1][:32][::-1]}.py",
                 image=self.image_exec,
                 network_file_systems={"/cache": nfs},
             )
