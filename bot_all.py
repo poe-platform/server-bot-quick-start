@@ -1,5 +1,11 @@
 # TODO - write script to update settings
 
+"""
+modal deploy bot_all.py
+
+modal app stop wrapper-bot-poe && modal deploy bot_all.py
+"""
+
 from __future__ import annotations
 import os
 
@@ -19,6 +25,7 @@ from bot_PromotedAnswer import PromotedAnswerBot
 from bot_PythonAgent import PythonAgentBot
 from bot_PythonAgentEx import PythonAgentExBot
 from bot_H1B import H1BBot
+from bot_ToolReasoner import ToolReasonerBot
 
 REQUIREMENTS = [
     "fastapi-poe==0.0.48", 
@@ -66,6 +73,7 @@ def fastapi_app():
             PythonAgentBot(path="/PythonAgent", access_key=POE_ACCESS_KEY),
             PythonAgentExBot(path="/PythonAgentEx", access_key=POE_ACCESS_KEY),
             H1BBot(path="/H-1B", access_key=POE_ACCESS_KEY),
+            ToolReasonerBot(path="/ToolReasoner", access_key=POE_ACCESS_KEY),
         ],
     )
     return app

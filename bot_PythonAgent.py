@@ -29,17 +29,6 @@ from fastapi_poe.types import (
 from modal import Image, Sandbox
 
 
-def extract_code(text):
-    pattern = r"\n```python([\s\S]*?)\n```"
-    matches = re.findall(pattern, "\n" + text)
-    if matches:
-        return "\n\n".join(matches)
-
-    pattern = r"```python([\s\S]*?)```"
-    matches = re.findall(pattern, "\n" + text)
-    return "\n\n".join(textwrap.dedent(match) for match in matches)
-
-
 PYTHON_AGENT_SYSTEM_PROMPT = """
 You write the Python code for me
 
@@ -212,6 +201,16 @@ class PythonAgentBot(PoeBot):
     simulated_user_suffix_prompt = SIMULATED_USER_SUFFIX_PROMPT
     image_exec = IMAGE_EXEC
 
+    def extract_code(self, text):
+        pattern = r"\n```python([\s\S]*?)\n```"
+        matches = re.findall(pattern, "\n" + text)
+        if matches:
+            return "\n\n".join(matches)
+
+        pattern = r"```python([\s\S]*?)```"
+        matches = re.findall(pattern, "\n" + text)
+        return "\n\n".join(textwrap.dedent(match) for match in matches)
+
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[PartialResponse]:
@@ -264,7 +263,7 @@ class PythonAgentBot(PoeBot):
                 else:
                     current_bot_reply += msg.text
                     yield self.text_event(msg.text)
-                    if extract_code(current_bot_reply):
+                    if self.extract_code(current_bot_reply):
                         # break when a Python code block is detected
                         break
 
@@ -272,7 +271,7 @@ class PythonAgentBot(PoeBot):
             request.query.append(message)
 
             # if the bot output does not have code, terminate
-            code = extract_code(current_bot_reply)
+            code = self.extract_code(current_bot_reply)
             if not code:
                 return
 
