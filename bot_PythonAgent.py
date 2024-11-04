@@ -27,7 +27,7 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
-from modal import App, Image, asgi_app
+from modal import App, Image, asgi_app, Sandbox
 
 
 def extract_code(reply):
@@ -193,7 +193,7 @@ class PythonAgentBot(PoeBot):
             vol = modal.NetworkFileSystem.lookup(f"vol-{request.user_id}")
         except Exception:
             nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id}", create_if_missing=True)
-            sb = app.spawn_sandbox(
+            sb = Sandbox.create(
                 "bash", "-c", "cd /cache", network_file_systems={"/cache": nfs}
             )
             sb.wait()
@@ -256,7 +256,7 @@ class PythonAgentBot(PoeBot):
 
             # execute code
             nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id}", create_if_missing=True)
-            sb = app.spawn_sandbox(
+            sb = Sandbox.create(
                 "bash",
                 "-c",
                 f"cd /cache && python {request.conversation_id}.py",
@@ -362,9 +362,6 @@ image_bot = (
     .env(
         {
             "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
-            "CLOUDINARY_CLOUD_NAME": os.environ["CLOUDINARY_CLOUD_NAME"],
-            "CLOUDINARY_API_KEY": os.environ["CLOUDINARY_API_KEY"],
-            "CLOUDINARY_API_SECRET": os.environ["CLOUDINARY_API_SECRET"],
         }
     )
 )
