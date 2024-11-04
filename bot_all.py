@@ -16,6 +16,8 @@ from bot_JapaneseKana import JapaneseKanaBot
 from bot_KnowledgeTest import KnowledgeTestBot
 from bot_ModelRouter import ModelRouterBot
 from bot_PromotedAnswer import PromotedAnswerBot
+from bot_PythonAgent import PythonAgentBot
+from bot_PythonAgentEx import PythonAgentExBot
 
 
 REQUIREMENTS = [
@@ -60,6 +62,8 @@ def fastapi_app():
             KnowledgeTestBot(path="/KnowledgeTest", access_key=POE_ACCESS_KEY),
             ModelRouterBot(path="/ModelRouter", access_key=POE_ACCESS_KEY),
             PromotedAnswerBot(path="/PromotedAnswer", access_key=POE_ACCESS_KEY),
+            PythonAgentBot(path="/PythonAgent", access_key=POE_ACCESS_KEY),
+            PythonAgentExBot(path="/PythonAgentEx", access_key=POE_ACCESS_KEY),
         ],
     )
     return app

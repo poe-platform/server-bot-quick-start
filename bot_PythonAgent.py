@@ -20,7 +20,6 @@ import requests
 from fastapi_poe import PoeBot, make_app
 from fastapi_poe.client import MetaMessage, stream_request
 from fastapi_poe.types import (
-    Attachment,
     PartialResponse,
     ProtocolMessage,
     QueryRequest,
@@ -187,17 +186,7 @@ class PythonAgentBot(PoeBot):
         for query in request.query:
             query.message_id = ""
 
-        # procedure to create volume if it does not exist
-        # tried other ways to write a code but has hydration issues
-        try:
-            vol = modal.NetworkFileSystem.lookup(f"vol-{request.user_id}")
-        except Exception:
-            nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id}", create_if_missing=True)
-            sb = Sandbox.create(
-                "bash", "-c", "cd /cache", network_file_systems={"/cache": nfs}
-            )
-            sb.wait()
-            vol = modal.NetworkFileSystem.lookup(f"vol-{request.user_id}")
+        nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id}", create_if_missing=True)
 
         for query in request.query:
             for attachment in query.attachments:
@@ -208,7 +197,7 @@ class PythonAgentBot(PoeBot):
             r = requests.get(attachment.url)
             with open(attachment.name, "wb") as f:
                 f.write(r.content)
-            vol.add_local_file(attachment.name, attachment.name)
+            nfs.add_local_file(attachment.name, attachment.name)
 
         # for query in request.query:
         # bot calling doesn't allow attachments
@@ -250,12 +239,11 @@ class PythonAgentBot(PoeBot):
             # upload python script
             with open(f"{request.conversation_id}.py", "w") as f:
                 f.write(wrapped_code)
-            vol.add_local_file(
+            nfs.add_local_file(
                 f"{request.conversation_id}.py", f"{request.conversation_id}.py"
             )
 
             # execute code
-            nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id}", create_if_missing=True)
             sb = Sandbox.create(
                 "bash",
                 "-c",
@@ -308,10 +296,10 @@ class PythonAgentBot(PoeBot):
 
             # upload image and get image url
             image_data = None
-            if any("image.png" in str(entry) for entry in vol.listdir("*")):
+            if any("image.png" in str(entry) for entry in nfs.listdir("*")):
                 # some roundabout way to check if image file is in directory
                 with open("image.png", "wb") as f:
-                    for chunk in vol.read_file("image.png"):
+                    for chunk in nfs.read_file("image.png"):
                         f.write(chunk)
 
                 image_data = None
@@ -329,7 +317,7 @@ class PythonAgentBot(PoeBot):
                     yield PartialResponse(
                         text=f"\n\n![plot][{attachment_upload_response.inline_ref}]\n\n"
                     )
-                    vol.remove_file("image.png")
+                    nfs.remove_file("image.png")
 
             yield self.text_event("\n")
 
@@ -355,16 +343,6 @@ class PythonAgentBot(PoeBot):
             enable_image_comprehension=True,
         )
 
-
-image_bot = (
-    Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.43", "requests==2.28.2", "cloudinary")
-    .env(
-        {
-            "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
-        }
-    )
-)
 
 image_exec = (
     Image
@@ -416,10 +394,3 @@ image_exec = (
 
 
 bot = PythonAgentBot()
-
-
-@app.function(image=image_bot, container_idle_timeout=1200)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
-    return app
