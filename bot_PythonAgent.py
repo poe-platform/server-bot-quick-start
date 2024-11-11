@@ -10,10 +10,9 @@ list directory
 
 from __future__ import annotations
 
-import os
 import re
 import textwrap
-from typing import AsyncIterable
+from typing import AsyncIterable, Optional
 
 import modal
 import requests
@@ -194,9 +193,8 @@ class PythonAgentBot(PoeBot):
     code_iteration_limit = 3
     logit_bias = {}  # "!["
     allow_attachments = True
-    system_prompt_role = "system"  # Claude-3 does not allow system prompt yet
-    stateful = True
-    python_agent_system_prompt = PYTHON_AGENT_SYSTEM_PROMPT
+    system_prompt_role: Optional[str] = "system"  # Claude-3 does not allow system prompt yet
+    python_agent_system_prompt: Optional[str] = PYTHON_AGENT_SYSTEM_PROMPT
     code_with_wrappers = CODE_WITH_WRAPPERS
     simulated_user_suffix_prompt = SIMULATED_USER_SUFFIX_PROMPT
     image_exec = IMAGE_EXEC
@@ -219,11 +217,13 @@ class PythonAgentBot(PoeBot):
         print("user_message")
         print(last_message)
 
-        PYTHON_AGENT_SYSTEM_MESSAGE = ProtocolMessage(
-            role=self.system_prompt_role, content=self.python_agent_system_prompt
-        )
-
-        request.query = [PYTHON_AGENT_SYSTEM_MESSAGE] + request.query
+        assert (self.python_agent_system_prompt is not None) == (self.system_prompt_role is not None)
+        if self.python_agent_system_prompt is not None:
+            PYTHON_AGENT_SYSTEM_MESSAGE = ProtocolMessage(
+                role=self.system_prompt_role, content=self.python_agent_system_prompt
+            )
+            request.query = [PYTHON_AGENT_SYSTEM_MESSAGE] + request.query
+        
         request.logit_bias = self.logit_bias
         request.temperature = 0.1  # does this work?
 

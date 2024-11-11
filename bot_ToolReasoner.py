@@ -39,10 +39,10 @@ def process_python_code(query):
 
 
 class ToolReasonerBot(PythonAgentBot):
-    prompt_bot = "Claude-3.5-Sonnet"
+    prompt_bot = "Qwen2.5-72B-Instruct"
     code_iteration_limit = 5
-    system_prompt_role = "system"
-    python_agent_system_prompt = PYTHON_AGENT_SYSTEM_PROMPT
+    system_prompt_role = None
+    python_agent_system_prompt = None
 
     def extract_code(self, text):
         def extract_code_inner(text):
