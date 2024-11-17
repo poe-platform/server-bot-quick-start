@@ -1,7 +1,7 @@
 repos:
   # Order matters because pyupgrade may make changes that pycln and black have to clean up
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.19.0
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
@@ -19,19 +19,19 @@ repos:
         name: isort (python)
 
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.10.0
     hooks:
       - id: black
         language_version: python3.11
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
   - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         additional_dependencies:
