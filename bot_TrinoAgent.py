@@ -92,7 +92,7 @@ def make_query(query):
 
 
 class TrinoAgentBot(PoeBot):
-    prompt_bot = "Claude-3-Haiku"
+    prompt_bot = "GPT-4o-mini"
     iteration_count = 3
 
     async def get_response(
@@ -169,36 +169,7 @@ class TrinoAgentBot(PoeBot):
         )
 
 
-image_bot = (
-    Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.37", "trino")
-    .env(
-        {
-            "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
-            "TRINO_HOST_URL": os.environ["TRINO_HOST_URL"],
-            "TRINO_USERNAME": os.environ["TRINO_USERNAME"],
-            "TRINO_PASSWORD": os.environ["TRINO_PASSWORD"],
-        }
-    )
-)
+class TrinoAgentExBot(TrinoAgentBot):
+    prompt_bot = "Claude-3.5-Sonnet-200k"
+    iteration_count = 10
 
-stub = Stub("poe-bot-quickstart")
-
-bot1 = TrinoAgentBot()
-
-@stub.function(image=image_bot, container_idle_timeout=1200)
-@asgi_app()
-def fastapi_app1():
-    app = make_app(bot1, api_key=os.environ["POE_ACCESS_KEY"])
-    return app
-
-
-bot2 = TrinoAgentBot()
-bot2.prompt_bot = "Claude-3.5-Sonnet-200k"
-bot2.iteration_count = 10
-
-@stub.function(image=image_bot, container_idle_timeout=1200)
-@asgi_app()
-def fastapi_app2():
-    app = make_app(bot2, api_key=os.environ["POE_ACCESS_KEY"])
-    return app

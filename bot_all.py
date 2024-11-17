@@ -22,13 +22,14 @@ from bot_JapaneseKana import JapaneseKanaBot
 from bot_KnowledgeTest import KnowledgeTestBot
 from bot_ModelRouter import ModelRouterBot
 from bot_PromotedAnswer import PromotedAnswerBot
-from bot_PythonAgent import PythonAgentBot
-from bot_PythonAgentEx import PythonAgentExBot
+from bot_PythonAgent import PythonAgentBot, PythonAgentExBot
 from bot_H1B import H1BBot
 from bot_ToolReasoner import ToolReasonerBot
 from bot_ResumeReview import ResumeReviewBot
 from bot_TesseractOCR import TesseractOCRBot
 from bot_tiktoken import TikTokenBot
+from bot_TrinoAgent import TrinoAgentBot, TrinoAgentExBot
+from bot_RunTrinoQuery import RunTrinoQueryBot
 
 
 REQUIREMENTS = [
@@ -42,6 +43,7 @@ REQUIREMENTS = [
     "pytesseract==0.3.10",  # ResumeReview
     "python-docx",  # ResumeReview
     "tiktoken",  # tiktoken
+    "trino",  # RunTrinoQuery, TrinoAgent
 ]
 image = (
     Image.debian_slim()
@@ -52,6 +54,9 @@ image = (
         {
             "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
             "OPENAI_API_KEY": os.environ["OPENAI_API_KEY"],
+            "TRINO_HOST_URL": os.environ["TRINO_HOST_URL"],  # TrinoAgent, RunTrinoQuery
+            "TRINO_USERNAME": os.environ["TRINO_USERNAME"],  # TrinoAgent, RunTrinoQuery
+            "TRINO_PASSWORD": os.environ["TRINO_PASSWORD"],  # TrinoAgent, RunTrinoQuery
         }
     )
     .copy_local_file("chinese_sentences.txt", "/root/chinese_sentences.txt")  # ChineseStatement
@@ -63,7 +68,7 @@ image = (
 app = App("wrapper-bot-poe")
 
 
-@app.function(image=image)
+@app.function(image=image, container_idle_timeout=1200)
 @asgi_app()
 def fastapi_app():
     POE_ACCESS_KEY = os.environ["POE_ACCESS_KEY"]
@@ -88,6 +93,9 @@ def fastapi_app():
             ResumeReviewBot(path="/ResumeReview", access_key=POE_ACCESS_KEY),
             TesseractOCRBot(path="/TesseractOCR", access_key=POE_ACCESS_KEY),
             TikTokenBot(path="/tiktoken", access_key=POE_ACCESS_KEY),
+            TrinoAgentBot(path="/TrinoAgent", access_key=POE_ACCESS_KEY),
+            TrinoAgentExBot(path="/TrinoAgentEx", access_key=POE_ACCESS_KEY),
+            RunTrinoQueryBot(path="/RunTrinoQuery", access_key=POE_ACCESS_KEY),
         ],
     )
     return app

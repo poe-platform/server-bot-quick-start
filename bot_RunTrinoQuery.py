@@ -7,6 +7,7 @@ SELECT nationkey, name FROM tpch.sf1.nation
 
 """
 
+import re
 import os
 import textwrap
 from typing import AsyncIterable
@@ -28,11 +29,10 @@ def format_output(columns, rows) -> str:
 
 
 def strip_code(code):
-    if len(code.strip()) < 6:
-        return code
-    code = code.strip()
-    if code.startswith("```") and code.endswith("```"):
-        code = code[3:-3]
+    pattern = r"```sql([\s\S]*?)```"
+    matches = re.findall(pattern, code)
+    if matches:
+        return "\n\n".join(matches)
     return code
 
 
@@ -58,7 +58,7 @@ def make_query(query):
     return output
 
 
-class EchoBot(PoeBot):
+class RunTrinoQueryBot(PoeBot):
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[ServerSentEvent]:
@@ -76,34 +76,12 @@ class EchoBot(PoeBot):
             introduction_message=textwrap.dedent(
                 """
             Please send a Trino query, such as
-            ```
+            ````
+            ```sql
             SELECT nationkey, name FROM tpch.sf1.nation
             ```
+            ````
+            Try copying the above, paste it, and reply.
             """
             ).strip(),
         )
-
-
-bot = EchoBot()
-
-image = (
-    Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.37", "trino")
-    .env(
-        {
-            "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
-            "TRINO_HOST_URL": os.environ["TRINO_HOST_URL"],
-            "TRINO_USERNAME": os.environ["TRINO_USERNAME"],
-            "TRINO_PASSWORD": os.environ["TRINO_PASSWORD"],
-        }
-    )
-)
-
-stub = Stub("poe-bot-quickstart")
-
-
-@stub.function(image=image, container_idle_timeout=1200)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
-    return app

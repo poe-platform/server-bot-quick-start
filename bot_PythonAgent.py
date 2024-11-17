@@ -388,3 +388,8 @@ class PythonAgentBot(PoeBot):
         )
 
 
+
+class PythonAgentExBot(PythonAgentBot):
+    prompt_bot = "o1-mini"
+    code_iteration_limit = 5
+    system_prompt_role = "user"
