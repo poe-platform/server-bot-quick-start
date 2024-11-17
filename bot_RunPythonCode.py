@@ -7,15 +7,14 @@ assert False
 
 """
 
-import os
 import re
 from typing import AsyncIterable
 
 import fastapi_poe.client
 import modal
-from fastapi_poe import MetaResponse, PoeBot, make_app
+from fastapi_poe import MetaResponse, PoeBot
 from fastapi_poe.types import QueryRequest, SettingsRequest, SettingsResponse
-from modal import App, Image, asgi_app
+from modal import Image, Sandbox
 from sse_starlette.sse import ServerSentEvent
 
 fastapi_poe.client.MAX_EVENT_COUNT = 10000
@@ -73,7 +72,57 @@ def extract_code(reply):
     return reply
 
 
-class EchoBot(PoeBot):
+IMAGE_EXEC = (
+    Image
+    .debian_slim()
+    .pip_install(
+        "ipython",
+        "scipy",
+        "matplotlib",
+        "scikit-learn",
+        "pandas",
+        "ortools",
+        "openai",
+        "requests",
+        "beautifulsoup4",
+        "newspaper3k",
+        "XlsxWriter",
+        "docx2txt",
+        "markdownify",
+        "pdfminer.six",
+        "Pillow",
+        "sortedcontainers",
+        "intervaltree",
+        "geopandas",
+        "basemap",
+        "tiktoken",
+        "basemap-data-hires",
+        "yfinance",
+        "dill",
+        "seaborn",
+        "openpyxl",
+        "cartopy",
+        "sympy",
+    )
+    .pip_install(
+        ["torch", "torchvision", "torchaudio"],
+        index_url="https://download.pytorch.org/whl/cpu",
+    )
+    .pip_install(
+        "tensorflow",
+        "keras",
+        "nltk",
+        "spacy",
+        "opencv-python-headless",
+        "feedparser",
+        "wordcloud",
+        "opencv-python",
+    )
+)
+
+
+
+class RunPythonCodeBot(PoeBot):
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[ServerSentEvent]:
@@ -101,22 +150,52 @@ class EchoBot(PoeBot):
         print(code)
         code = request.query[-1].content
         code = extract_code(code)
-        try:
-            f = modal.Function.lookup("run-python-code-shared", "execute_code")
-            captured_output = f.remote(code)  # need async await?
-        except modal.exception.TimeoutError:
-            yield self.text_event("Time limit exceeded.")
-            return
-        if len(captured_output) > 5000:
-            yield self.text_event(
-                "There is too much output, this is the partial output."
-            )
-            captured_output = captured_output[:5000]
-        reply_string = format_output(captured_output)
-        if not reply_string:
+
+        nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id[::-1][:32][::-1]}", create_if_missing=True)
+        # upload python script
+        with open(f"{request.conversation_id}.py", "w") as f:
+            f.write(code)
+        nfs.add_local_file(
+            f"{request.conversation_id}.py", f"{request.conversation_id[::-1][:32][::-1]}.py"
+        )
+
+        # execute code
+        sb = Sandbox.create(
+            "bash",
+            "-c",
+            f"cd /cache && python {request.conversation_id[::-1][:32][::-1]}.py",
+            image=IMAGE_EXEC,
+            network_file_systems={"/cache": nfs},
+        )
+        sb.wait()
+
+        print("sb.returncode", sb.returncode)
+
+        output = sb.stdout.read()
+        error = sb.stderr.read()
+
+        if not output and not error:
             yield self.text_event("No output or error recorded.")
             return
-        yield self.text_event(reply_string)
+
+        if output:
+            if len(output) > 5000:
+                yield self.text_event(
+                    "There is too much output, this is the partial output."
+                )
+                output = output[:5000]
+            reply_string = format_output(output)
+            yield self.text_event(reply_string)
+
+        if error:
+            if len(error) > 5000:
+                yield self.text_event(
+                    "There is too much error, this is the partial error."
+                )
+                error = error[:5000]
+            reply_string = format_output(error)
+            yield self.text_event(reply_string)
+
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
@@ -125,20 +204,3 @@ class EchoBot(PoeBot):
             introduction_message=INTRODUCTION_MESSAGE,
         )
 
-
-bot = EchoBot()
-
-image = (
-    Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.37")
-    .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
-)
-
-app = App("poe-bot-quickstart")
-
-
-@app.function(image=image, container_idle_timeout=1200)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
-    return app

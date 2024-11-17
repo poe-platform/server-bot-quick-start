@@ -21,6 +21,7 @@ from bot_JapaneseKana import JapaneseKanaBot
 from bot_KnowledgeTest import KnowledgeTestBot
 from bot_ModelRouter import ModelRouterBot
 from bot_PromotedAnswer import PromotedAnswerBot
+from bot_RunPythonCode import RunPythonCodeBot
 from bot_PythonAgent import PythonAgentBot, PythonAgentExBot, LeetCodeAgentBot
 from bot_H1B import H1BBot
 from bot_ToolReasoner import ToolReasonerBot
@@ -129,6 +130,7 @@ def fastapi_app():
             KnowledgeTestBot(path="/KnowledgeTest", access_key=POE_ACCESS_KEY),
             ModelRouterBot(path="/ModelRouter", access_key=POE_ACCESS_KEY),
             PromotedAnswerBot(path="/PromotedAnswer", access_key=POE_ACCESS_KEY),
+            RunPythonCodeBot(path="/RunPythonCode", access_key=POE_ACCESS_KEY),
             PythonAgentBot(path="/PythonAgent", access_key=POE_ACCESS_KEY),
             PythonAgentExBot(path="/PythonAgentEx", access_key=POE_ACCESS_KEY),
             H1BBot(path="/H-1B", access_key=POE_ACCESS_KEY),
