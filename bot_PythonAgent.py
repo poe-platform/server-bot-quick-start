@@ -388,4 +388,3 @@ class PythonAgentBot(PoeBot):
         )
 
 
-bot = PythonAgentBot()

@@ -24,7 +24,7 @@ fastapi_poe.client.MAX_EVENT_COUNT = 10000
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 
-class EchoBot(PoeBot):
+class TikTokenBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
         last_message = query.query[-1].content
         tokens = encoding.encode(last_message)
@@ -43,16 +43,3 @@ class EchoBot(PoeBot):
             introduction_message="Submit a statement for it to be broken down into tokens that ChatGPT reads.",
         )
 
-
-bot = EchoBot()
-
-image = Image.debian_slim().pip_install("fastapi-poe==0.0.23", "tiktoken")
-
-stub = Stub("poe-bot-quickstart")
-
-
-@stub.function(image=image)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, allow_without_key=True)
-    return app

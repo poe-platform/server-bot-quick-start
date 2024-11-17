@@ -203,7 +203,7 @@ The resume is contained within the following triple backticks
 """
 
 
-class EchoBot(PoeBot):
+class TesseractOCRBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
         user_statement: str = query.query[-1].content
         print(query.conversation_id, user_statement)
@@ -269,51 +269,3 @@ class EchoBot(PoeBot):
             allow_attachments=True,
             introduction_message="Please upload your document (pdf, docx).",
         )
-
-
-# Echo bot is a very simple bot that just echoes back the user's last message.
-bot = EchoBot()
-
-# A sample bot that showcases the capabilities the protocol provides. Please see the
-# following link for the full set of available message commands:
-# https://github.com/poe-platform/server-bot-quick-start/blob/main/catbot/catbot.md
-# bot = CatBot()
-
-# A bot that uses Poe's ChatGPT bot, but makes all messages ALL CAPS.
-# Good simple example of using another bot using Poe's third party bot API.
-# For more details, see: https://developer.poe.com/server-bots/accessing-other-bots-on-poe
-# bot = ChatGPTAllCapsBot()
-
-# A bot that calls two different bots (default to Assistant and Claude-Instant) and displays the
-# results. Users can decide what bots to call by including in the message a string
-# of the form (botname1 vs botname2)
-# bot = BattleBot()
-
-# A chatbot based on a model hosted on HuggingFace.
-# bot = HuggingFaceBot("microsoft/DialoGPT-medium")
-
-# The following is setup code that is required to host with modal.com
-image = (
-    Image.debian_slim()
-    .apt_install("libpoppler-cpp-dev")
-    .apt_install("tesseract-ocr-eng")
-    .pip_install(
-        "fastapi-poe==0.0.23",
-        "huggingface-hub==0.16.4",
-        "requests==2.31.0",
-        "pdftotext==2.2.2",
-        "Pillow==9.5.0",
-        "openai==0.27.8",
-        "pytesseract==0.3.10",
-        "python-docx",
-    )
-).env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
-
-stub = Stub("poe-bot-quickstart")
-
-
-@stub.function(image=image)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
-    return app

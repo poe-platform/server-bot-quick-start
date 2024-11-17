@@ -26,16 +26,27 @@ from bot_PythonAgent import PythonAgentBot
 from bot_PythonAgentEx import PythonAgentExBot
 from bot_H1B import H1BBot
 from bot_ToolReasoner import ToolReasonerBot
+from bot_ResumeReview import ResumeReviewBot
+from bot_TesseractOCR import TesseractOCRBot
+from bot_tiktoken import TikTokenBot
+
 
 REQUIREMENTS = [
     "fastapi-poe==0.0.48", 
-    "openai",  # WrapperBotDemo
+    "openai==1.54.4",  # WrapperBotDemo, ResumeReview
     "pandas",  # which version?
-    "requests==2.31.0",  # PromotedAnswerBot
+    "requests==2.31.0",  # PromotedAnswerBot, ResumeReview
     "beautifulsoup4==4.10.0",  # PromotedAnswerBot
+    "pdftotext==2.2.2",  # ResumeReview
+    "Pillow==9.5.0",  # ResumeReview
+    "pytesseract==0.3.10",  # ResumeReview
+    "python-docx",  # ResumeReview
+    "tiktoken",  # tiktoken
 ]
 image = (
     Image.debian_slim()
+    .apt_install("libpoppler-cpp-dev")
+    .apt_install("tesseract-ocr-eng")
     .pip_install(*REQUIREMENTS)
     .env(
         {
@@ -74,6 +85,9 @@ def fastapi_app():
             PythonAgentExBot(path="/PythonAgentEx", access_key=POE_ACCESS_KEY),
             H1BBot(path="/H-1B", access_key=POE_ACCESS_KEY),
             ToolReasonerBot(path="/ToolReasoner", access_key=POE_ACCESS_KEY),
+            ResumeReviewBot(path="/ResumeReview", access_key=POE_ACCESS_KEY),
+            TesseractOCRBot(path="/TesseractOCR", access_key=POE_ACCESS_KEY),
+            TikTokenBot(path="/tiktoken", access_key=POE_ACCESS_KEY),
         ],
     )
     return app

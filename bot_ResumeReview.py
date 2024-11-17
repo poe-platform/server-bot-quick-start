@@ -18,7 +18,7 @@ import fastapi_poe.client
 import pdftotext
 import requests
 from docx import Document
-from fastapi_poe import PoeBot, make_app
+from fastapi_poe import PoeBot
 from fastapi_poe.client import MetaMessage, stream_request
 from fastapi_poe.types import (
     ProtocolMessage,
@@ -26,7 +26,6 @@ from fastapi_poe.types import (
     SettingsRequest,
     SettingsResponse,
 )
-from modal import Image, Stub, asgi_app
 from sse_starlette.sse import ServerSentEvent
 
 fastapi_poe.client.MAX_EVENT_COUNT = 10000
@@ -110,7 +109,7 @@ Do not reproduce the full resume unless asked. You will not evaluate the resume,
 """
 
 
-class EchoBot(PoeBot):
+class ResumeReviewBot(PoeBot):
     async def get_response(self, query: QueryRequest) -> AsyncIterable[ServerSentEvent]:
         for query_message in query.query:
             # replace attachment with text
@@ -166,33 +165,6 @@ class EchoBot(PoeBot):
         return SettingsResponse(
             server_bot_dependencies={"Claude-3.5-Sonnet": 1},
             allow_attachments=True,  # to update when ready
-            introduction_message="Please upload your resume (pdf, docx, image) and say 'Review this'.",
+            introduction_message="Please upload your resume (pdf, docx, or image).",
         )
 
-
-bot = EchoBot()
-
-image = (
-    Image.debian_slim()
-    .apt_install("libpoppler-cpp-dev")
-    .apt_install("tesseract-ocr-eng")
-    .pip_install(
-        "fastapi-poe==0.0.23",
-        "huggingface-hub==0.16.4",
-        "requests==2.31.0",
-        "pdftotext==2.2.2",
-        "Pillow==9.5.0",
-        "openai==0.27.8",
-        "pytesseract==0.3.10",
-        "python-docx",
-    )
-).env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
-
-stub = Stub("poe-bot-quickstart")
-
-
-@stub.function(image=image)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
-    return app
