@@ -93,7 +93,7 @@ class EnglishDiffBot(PoeBot):
         ]
 
         character_reply = ""
-        async for msg in stream_request(query, "Claude-instant", query.api_key):
+        async for msg in stream_request(query, "GPT-4o-mini", query.api_key):
             # Note: See https://poe.com/EnglishDiffTool for the system prompt
             if isinstance(msg, MetaMessage):
                 continue
@@ -116,7 +116,7 @@ class EnglishDiffBot(PoeBot):
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            server_bot_dependencies={"Claude-instant": 1},
+            server_bot_dependencies={"GPT-4o-mini": 1},
             allow_attachments=False,
             introduction_message="This bot will reply you the statement you made, with the language corrected.",
         )

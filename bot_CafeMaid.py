@@ -26,7 +26,7 @@ Welcome home, Master!
 
 In our café, you can enjoy delicious meals and drinks. What would you like to try?
 
-![greet](https://i.imgur.com/2HBmTnq.png)
+![greet](https://i.imgur.com/Ybz78sd.jpeg)
 """.strip()
 
 
@@ -125,7 +125,7 @@ class CafeMaidBot(PoeBot):
             ProtocolMessage(role="system", content=CHARACTER_CONVERSATION_SYSTEM_PROMPT)
         ] + request.query
         last_reply = ""
-        async for msg in stream_request(request, "GPT-4", request.access_key):
+        async for msg in stream_request(request, "GPT-4o-mini", request.access_key):
             last_reply += msg.text
             yield msg
         print("last_reply", last_reply)
@@ -139,7 +139,7 @@ class CafeMaidBot(PoeBot):
             ProtocolMessage(role="user", content=ACTION_EXTRACTION_PROMPT_TEMPLATE),
         ]
         action = ""
-        async for msg in stream_request(request, "GPT-4", request.access_key):
+        async for msg in stream_request(request, "GPT-4o-mini", request.access_key):
             action += msg.text
         print("action", action)
 
@@ -162,7 +162,7 @@ class CafeMaidBot(PoeBot):
             ProtocolMessage(role="user", content=SUGGESTED_REPLIES_USER_PROMPT),
         ]
         response_text = ""
-        async for msg in stream_request(request, "ChatGPT", request.access_key):
+        async for msg in stream_request(request, "GPT-4o-mini", request.access_key):
             response_text += msg.text
         print("suggested_reply", response_text)
 
@@ -173,7 +173,7 @@ class CafeMaidBot(PoeBot):
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
         return SettingsResponse(
-            server_bot_dependencies={"FLUX-schnell": 1, "GPT-4": 2, "ChatGPT": 1},
+            server_bot_dependencies={"FLUX-schnell": 1, "GPT-4o-mini": 3},
             introduction_message=INTRODUCTION_MESSAGE,
         )
 
