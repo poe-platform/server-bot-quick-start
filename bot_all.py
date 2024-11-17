@@ -12,7 +12,6 @@ import os
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
 
-from wrapper_bot import WrapperBot
 from bot_CafeMaid import CafeMaidBot
 from bot_ChineseStatement import ChineseStatementBot
 from bot_ChineseVocab import ChineseVocabBot
@@ -121,7 +120,6 @@ def fastapi_app():
     # app = fp.make_app(bot, access_key=POE_ACCESS_KEY, bot_name=<YOUR_BOT_NAME>)
     app = fp.make_app(
         [
-            WrapperBot(path="/WrapperBotDemo", access_key=POE_ACCESS_KEY),
             CafeMaidBot(path="/CafeMaid", access_key=POE_ACCESS_KEY),
             ChineseStatementBot(path="/ChineseStatement", access_key=POE_ACCESS_KEY),
             ChineseVocabBot(path="/ChineseVocab", access_key=POE_ACCESS_KEY),
