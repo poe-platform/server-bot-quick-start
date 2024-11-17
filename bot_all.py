@@ -22,7 +22,7 @@ from bot_JapaneseKana import JapaneseKanaBot
 from bot_KnowledgeTest import KnowledgeTestBot
 from bot_ModelRouter import ModelRouterBot
 from bot_PromotedAnswer import PromotedAnswerBot
-from bot_PythonAgent import PythonAgentBot, PythonAgentExBot
+from bot_PythonAgent import PythonAgentBot, PythonAgentExBot, LeetCodeAgentBot
 from bot_H1B import H1BBot
 from bot_ToolReasoner import ToolReasonerBot
 from bot_ResumeReview import ResumeReviewBot
@@ -96,6 +96,7 @@ def fastapi_app():
             TrinoAgentBot(path="/TrinoAgent", access_key=POE_ACCESS_KEY),
             TrinoAgentExBot(path="/TrinoAgentEx", access_key=POE_ACCESS_KEY),
             RunTrinoQueryBot(path="/RunTrinoQuery", access_key=POE_ACCESS_KEY),
+            LeetCodeAgentBot(path="/LeetCodeAgent", access_key=POE_ACCESS_KEY),
         ],
     )
     return app
