@@ -19,6 +19,8 @@ class LogBot(fp.PoeBot):
     async def get_response(
         self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
+        request.access_key = "redacted"
+        request.api_key = "redacted"
         yield fp.PartialResponse(text="```python\n" + pformat(request) + "\n```")
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
