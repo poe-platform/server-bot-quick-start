@@ -131,8 +131,9 @@ A correct implementation would look like https://poe.com/TurboVsClaudeBotDemo
 
 ### PythonAgent
 
-- This is a quite advanced example that demonstrates how to leverage OpenAI's code interpreter
-  functionality to run Python programs in a remote environment.
-- Supports files upload, file persistence, automatic code re-execution and matplotlib image output.
+- This is a quite advanced example that demonstrates how to leverage OpenAI's code
+  interpreter functionality to run Python programs in a remote environment.
+- Supports files upload, file persistence, automatic code re-execution and matplotlib
+  image output.
 
 A correct implementation would look like https://poe.com/PythonAgent

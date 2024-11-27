@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 import textwrap
-from typing import AsyncIterable, Optional
+from typing import AsyncIterable
 
 import modal
 import requests
@@ -26,7 +26,6 @@ from fastapi_poe.types import (
     SettingsResponse,
 )
 from modal import Image, Sandbox
-
 
 PYTHON_AGENT_SYSTEM_PROMPT = """
 You write the Python code for me
@@ -141,8 +140,7 @@ Otherwise, conclude with only text in plaintext. Do NOT produce the final versio
 
 
 IMAGE_EXEC = (
-    Image
-    .debian_slim()
+    Image.debian_slim()
     .pip_install(
         "ipython",
         "scipy",
@@ -188,13 +186,16 @@ IMAGE_EXEC = (
     )
 )
 
+
 class PythonAgentBot(PoeBot):
     prompt_bot = "GPT-4o"
     code_iteration_limit = 3
     logit_bias = {}  # "!["
     allow_attachments = True
-    system_prompt_role: Optional[str] = "system"  # Claude-3 does not allow system prompt yet
-    python_agent_system_prompt: Optional[str] = PYTHON_AGENT_SYSTEM_PROMPT
+    system_prompt_role: str | None = (
+        "system"  # Claude-3 does not allow system prompt yet
+    )
+    python_agent_system_prompt: str | None = PYTHON_AGENT_SYSTEM_PROMPT
     code_with_wrappers = CODE_WITH_WRAPPERS
     simulated_user_suffix_prompt = SIMULATED_USER_SUFFIX_PROMPT
     image_exec = IMAGE_EXEC
@@ -217,20 +218,24 @@ class PythonAgentBot(PoeBot):
         print("user_message")
         print(last_message)
 
-        assert (self.python_agent_system_prompt is not None) == (self.system_prompt_role is not None)
+        assert (self.python_agent_system_prompt is not None) == (
+            self.system_prompt_role is not None
+        )
         if self.python_agent_system_prompt is not None:
             PYTHON_AGENT_SYSTEM_MESSAGE = ProtocolMessage(
                 role=self.system_prompt_role, content=self.python_agent_system_prompt
             )
             request.query = [PYTHON_AGENT_SYSTEM_MESSAGE] + request.query
-        
+
         request.logit_bias = self.logit_bias
         request.temperature = 0.1  # does this work?
 
         for query in request.query:
             query.message_id = ""
 
-        nfs = modal.NetworkFileSystem.from_name(f"vol-{request.user_id[::-1][:32][::-1]}", create_if_missing=True)
+        nfs = modal.NetworkFileSystem.from_name(
+            f"vol-{request.user_id[::-1][:32][::-1]}", create_if_missing=True
+        )
 
         for query in request.query:
             for attachment in query.attachments:
@@ -278,13 +283,16 @@ class PythonAgentBot(PoeBot):
             # prepare code for execution
             print("code")
             print(code)
-            wrapped_code = self.code_with_wrappers.format(code=code, conversation_id=request.conversation_id)
+            wrapped_code = self.code_with_wrappers.format(
+                code=code, conversation_id=request.conversation_id
+            )
 
             # upload python script
             with open(f"{request.conversation_id}.py", "w") as f:
                 f.write(wrapped_code)
             nfs.add_local_file(
-                f"{request.conversation_id}.py", f"{request.conversation_id[::-1][:32][::-1]}.py"
+                f"{request.conversation_id}.py",
+                f"{request.conversation_id[::-1][:32][::-1]}.py",
             )
 
             # execute code
@@ -388,12 +396,10 @@ class PythonAgentBot(PoeBot):
         )
 
 
-
 class PythonAgentExBot(PythonAgentBot):
     prompt_bot = "Claude-3.5-Sonnet-200k"
     code_iteration_limit = 5
     system_prompt_role = "system"
-
 
 
 class LeetCodeAgentBot(PythonAgentBot):
