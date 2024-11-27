@@ -1,6 +1,8 @@
 """
 
-BOT_NAME="PythonAgent"; modal deploy --name $BOT_NAME bot_${BOT_NAME}.py; curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
+BOT_NAME="PythonAgent";
+modal deploy --name $BOT_NAME bot_${BOT_NAME}.py;
+curl -X POST https://api.poe.com/bot/fetch_settings/$BOT_NAME/$POE_ACCESS_KEY
 
 """
 
@@ -120,7 +122,8 @@ Your code was executed without issues, without any standard output.
 
 SIMULATED_USER_SUFFIX_IMAGE_FOUND = """
 
-Your code was executed and it displayed a plot as attached. Please describe the plot and check if it makes sense.
+Your code was executed and it displayed a plot as attached.
+Please describe the plot and check if it makes sense.
 """
 
 SIMULATED_USER_SUFFIX_IMAGE_NOT_FOUND = """
