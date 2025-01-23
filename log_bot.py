@@ -6,12 +6,12 @@ Sample bot that shows the query sent to the bot.
 
 from __future__ import annotations
 
+import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
 from devtools import PrettyFormat
 from modal import App, Image, asgi_app
-import os
 
 pformat = PrettyFormat(width=85)
 
@@ -19,6 +19,7 @@ pformat = PrettyFormat(width=85)
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
+
 
 class LogBot(fp.PoeBot):
     async def get_response(
@@ -47,5 +48,10 @@ app = App("log-bot-poe")
 @asgi_app()
 def fastapi_app():
     bot = LogBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

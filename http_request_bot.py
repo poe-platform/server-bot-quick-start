@@ -6,10 +6,10 @@ Sample bot that shows how to access the HTTP request.
 
 from __future__ import annotations
 
+import os
 import re
 from typing import AsyncIterable
 
-import os
 import fastapi_poe as fp
 from devtools import PrettyFormat
 from modal import App, Image, asgi_app
@@ -20,6 +20,7 @@ pformat = PrettyFormat(width=85)
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
+
 
 class HttpRequestBot(fp.PoeBot):
     async def get_response_with_context(
@@ -48,5 +49,10 @@ app = App("http-request")
 @asgi_app()
 def fastapi_app():
     bot = HttpRequestBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

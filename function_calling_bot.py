@@ -7,17 +7,17 @@ Sample bot that demonstrates how to use OpenAI function calling with the Poe API
 from __future__ import annotations
 
 import json
+import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
 
-import os
-
 # TODO: set your bot access key and bot name for this bot to work
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
+
 
 def get_current_weather(location, unit="fahrenheit"):
     """Get the current weather in a given location"""
@@ -88,5 +88,10 @@ app = App("function-calling-poe")
 @asgi_app()
 def fastapi_app():
     bot = GPT35FunctionCallingBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

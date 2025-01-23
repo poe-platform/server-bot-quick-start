@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
 import requests
 from modal import App, Image, asgi_app
 from PyPDF2 import PdfReader
-import os
 
 # TODO: set your bot access key and bot name for full functionality
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
+
 
 class FileDownloadError(Exception):
     pass
@@ -64,5 +65,10 @@ app = App("pdf-counter-poe")
 @asgi_app()
 def fastapi_app():
     bot = PDFSizeBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

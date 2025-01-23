@@ -6,17 +6,17 @@ Sample bot that wraps GPT-3.5-Turbo but makes responses use all-caps.
 
 from __future__ import annotations
 
+import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
 
-import os
-
 # TODO: set your bot access key and bot name for this bot to work
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
+
 
 class GPT35TurboAllCapsBot(fp.PoeBot):
     async def get_response(
@@ -44,5 +44,10 @@ app = App("turbo-allcaps-poe")
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurboAllCapsBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

@@ -11,6 +11,7 @@ from modal import App, Image, Mount, asgi_app
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
 
+
 class VideoBot(fp.PoeBot):
     async def get_response(
         self, request: fp.QueryRequest
@@ -42,5 +43,10 @@ app = App(
 @asgi_app()
 def fastapi_app():
     bot = VideoBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

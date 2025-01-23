@@ -8,16 +8,17 @@ This is the simplest possible bot and a great place to start if you want to buil
 
 from __future__ import annotations
 
+import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
-import os
 
 # TODO: set your bot access key and bot name for full functionality
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = "testbotlocal"
+
 
 class EchoBot(fp.PoeBot):
     async def get_response(
@@ -40,5 +41,10 @@ app = App("echobot-poe")
 @asgi_app()
 def fastapi_app():
     bot = EchoBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

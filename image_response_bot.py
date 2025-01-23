@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import AsyncIterable
 import os
+from typing import AsyncIterable
+
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
 
@@ -13,6 +14,7 @@ IMAGE_URL = (
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
+
 
 class SampleImageResponseBot(fp.PoeBot):
     async def get_response(
@@ -34,5 +36,10 @@ app = App("image-response-poe")
 @asgi_app()
 def fastapi_app():
     bot = SampleImageResponseBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

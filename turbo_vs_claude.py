@@ -7,6 +7,7 @@ Sample bot that returns interleaved results from GPT-3.5-Turbo and Claude-instan
 from __future__ import annotations
 
 import asyncio
+import os
 import re
 from collections import defaultdict
 from typing import AsyncIterable, AsyncIterator
@@ -14,12 +15,11 @@ from typing import AsyncIterable, AsyncIterator
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
 
-import os
-
 # TODO: set your bot access key and bot name for this bot to work
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
+
 
 async def combine_streams(
     *streams: AsyncIterator[fp.PartialResponse],
@@ -143,5 +143,10 @@ app = App("turbo-vs-claude-poe")
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurbovsClaudeBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

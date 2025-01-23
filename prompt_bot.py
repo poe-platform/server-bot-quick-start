@@ -6,12 +6,11 @@ Sample bot that wraps Claude-3-Haiku but makes responses Haikus
 
 from __future__ import annotations
 
+import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
-
-import os
 
 SYSTEM_PROMPT = """
 All your replies are Haikus.
@@ -21,6 +20,7 @@ All your replies are Haikus.
 # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
+
 
 class PromptBot(fp.PoeBot):
     async def get_response(
@@ -51,5 +51,10 @@ app = App("prompt-bot-poe")
 @asgi_app()
 def fastapi_app():
     bot = PromptBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

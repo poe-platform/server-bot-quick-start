@@ -21,6 +21,7 @@ from modal import App, Image, asgi_app
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
 
+
 class CatBot(fp.PoeBot):
     async def get_response(
         self, request: fp.QueryRequest
@@ -109,5 +110,10 @@ app = App("catbot-poe")
 @asgi_app()
 def fastapi_app():
     bot = CatBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app

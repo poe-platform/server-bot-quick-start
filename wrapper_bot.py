@@ -21,6 +21,7 @@ bot_name = ""
 
 client = AsyncOpenAI()
 
+
 async def stream_chat_completion(request: fp.QueryRequest):
     messages = []
     # this is a demo bot, the messages and message length will be truncated
@@ -59,12 +60,7 @@ REQUIREMENTS = ["fastapi-poe", "openai"]
 image = (
     Image.debian_slim()
     .pip_install(*REQUIREMENTS)
-    .env(
-        {
-            "POE_ACCESS_KEY": bot_access_key,
-            "OPENAI_API_KEY": openai_api_key,
-        }
-    )
+    .env({"POE_ACCESS_KEY": bot_access_key, "OPENAI_API_KEY": openai_api_key})
 )
 app = App("wrapper-bot-poe")
 
@@ -73,5 +69,10 @@ app = App("wrapper-bot-poe")
 @asgi_app()
 def fastapi_app():
     bot = WrapperBot()
-    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app
