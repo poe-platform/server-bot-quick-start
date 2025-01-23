@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import os
 from typing import AsyncIterable
 
 import fastapi_poe as fp
 import requests
 from modal import App, Image, asgi_app
 from PyPDF2 import PdfReader
+
+# TODO: set your bot access key and bot name for full functionality
+# see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
+bot_access_key = os.getenv("POE_ACCESS_KEY")
+bot_name = ""
 
 
 class FileDownloadError(Exception):
@@ -46,8 +52,12 @@ class PDFSizeBot(fp.PoeBot):
         return fp.SettingsResponse(allow_attachments=True)
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.48", "PyPDF2==3.0.1", "requests==2.31.0"]
-image = Image.debian_slim().pip_install(*REQUIREMENTS)
+REQUIREMENTS = ["fastapi-poe", "PyPDF2==3.0.1", "requests==2.31.0"]
+image = (
+    Image.debian_slim()
+    .pip_install(*REQUIREMENTS)
+    .env({"POE_ACCESS_KEY": bot_access_key})
+)
 app = App("pdf-counter-poe")
 
 
@@ -55,7 +65,10 @@ app = App("pdf-counter-poe")
 @asgi_app()
 def fastapi_app():
     bot = PDFSizeBot()
-    # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
-    # app = fp.make_app(bot, access_key=<YOUR_ACCESS_KEY>, bot_name=<YOUR_BOT_NAME>)
-    app = fp.make_app(bot, allow_without_key=True)
+    app = fp.make_app(
+        bot,
+        access_key=bot_access_key,
+        bot_name=bot_name,
+        allow_without_key=not (bot_access_key and bot_name),
+    )
     return app
