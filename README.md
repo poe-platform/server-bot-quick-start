@@ -46,11 +46,11 @@ A correct implementation would look like https://poe.com/PromptBotDemo
 
 A correct implementation would look like https://poe.com/WrapperBotDemo
 
-
 ### SDXLBot
 
 - This bot demonstrates how to wrap an image generation endpoint.
-- It uses Fireworks AI's StableDiffusionXL endpoint. You will need to provide your own key for this.
+- It uses Fireworks AI's StableDiffusionXL endpoint. You will need to provide your own
+  key for this.
 - Alternatively, you can change the URL to point at a different provider or model.
 - To deploy, run `modal deploy sdxl_bot.py`
 
@@ -138,6 +138,3 @@ A correct implementation would look like https://poe.com/AllCapsBotDemo
   [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
 
 A correct implementation would look like https://poe.com/TurboVsClaudeBotDemo
-
-
-
