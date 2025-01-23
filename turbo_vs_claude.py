@@ -14,6 +14,12 @@ from typing import AsyncIterable, AsyncIterator
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
 
+import os
+
+# TODO: set your bot access key and bot name for this bot to work
+# see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
+bot_access_key = os.getenv("POE_ACCESS_KEY")
+bot_name = ""
 
 async def combine_streams(
     *streams: AsyncIterator[fp.PartialResponse],
@@ -124,8 +130,12 @@ class GPT35TurbovsClaudeBot(fp.PoeBot):
         )
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.48"]
-image = Image.debian_slim().pip_install(*REQUIREMENTS)
+REQUIREMENTS = ["fastapi-poe"]
+image = (
+    Image.debian_slim()
+    .pip_install(*REQUIREMENTS)
+    .env({"POE_ACCESS_KEY": bot_access_key})
+)
 app = App("turbo-vs-claude-poe")
 
 
@@ -133,7 +143,5 @@ app = App("turbo-vs-claude-poe")
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurbovsClaudeBot()
-    # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
-    # app = fp.make_app(bot, access_key=<YOUR_ACCESS_KEY>, bot_name=<YOUR_BOT_NAME>)
-    app = fp.make_app(bot, allow_without_key=True)
+    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
     return app

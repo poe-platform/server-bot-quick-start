@@ -13,8 +13,13 @@ import fastapi_poe as fp
 from modal import App, Image, asgi_app
 from openai import AsyncOpenAI
 
-client = AsyncOpenAI()
+# TODO: set your bot access key, and openai api key, and bot name for this bot to work
+# see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
+bot_access_key = os.getenv("POE_ACCESS_KEY")
+openai_api_key = os.getenv("OPENAI_API_KEY")
+bot_name = ""
 
+client = AsyncOpenAI()
 
 async def stream_chat_completion(request: fp.QueryRequest):
     messages = []
@@ -50,14 +55,14 @@ class WrapperBot(fp.PoeBot):
             yield msg
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.48", "openai"]
+REQUIREMENTS = ["fastapi-poe", "openai"]
 image = (
     Image.debian_slim()
     .pip_install(*REQUIREMENTS)
     .env(
         {
-            "POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"],
-            "OPENAI_API_KEY": os.environ["OPENAI_API_KEY"],
+            "POE_ACCESS_KEY": bot_access_key,
+            "OPENAI_API_KEY": openai_api_key,
         }
     )
 )
@@ -68,8 +73,5 @@ app = App("wrapper-bot-poe")
 @asgi_app()
 def fastapi_app():
     bot = WrapperBot()
-    POE_ACCESS_KEY = os.environ["POE_ACCESS_KEY"]
-    # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
-    # app = fp.make_app(bot, access_key=POE_ACCESS_KEY, bot_name=<YOUR_BOT_NAME>)
-    app = fp.make_app(bot, access_key=POE_ACCESS_KEY)
+    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
     return app

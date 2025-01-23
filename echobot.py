@@ -12,7 +12,12 @@ from typing import AsyncIterable
 
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
+import os
 
+# TODO: set your bot access key and bot name for full functionality
+# see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
+bot_access_key = os.getenv("POE_ACCESS_KEY")
+bot_name = "testbotlocal"
 
 class EchoBot(fp.PoeBot):
     async def get_response(
@@ -22,8 +27,12 @@ class EchoBot(fp.PoeBot):
         yield fp.PartialResponse(text=last_message)
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.48"]
-image = Image.debian_slim().pip_install(*REQUIREMENTS)
+REQUIREMENTS = ["fastapi-poe"]
+image = (
+    Image.debian_slim()
+    .pip_install(*REQUIREMENTS)
+    .env({"POE_ACCESS_KEY": bot_access_key})
+)
 app = App("echobot-poe")
 
 
@@ -31,7 +40,5 @@ app = App("echobot-poe")
 @asgi_app()
 def fastapi_app():
     bot = EchoBot()
-    # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
-    # app = fp.make_app(bot, access_key=<YOUR_ACCESS_KEY>, bot_name=<YOUR_BOT_NAME>)
-    app = fp.make_app(bot, allow_without_key=True)
+    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
     return app

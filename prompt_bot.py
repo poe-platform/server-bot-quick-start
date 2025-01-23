@@ -11,10 +11,16 @@ from typing import AsyncIterable
 import fastapi_poe as fp
 from modal import App, Image, asgi_app
 
+import os
+
 SYSTEM_PROMPT = """
 All your replies are Haikus.
 """.strip()
 
+# TODO: set your bot access key and bot name for this bot to work
+# see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
+bot_access_key = os.getenv("POE_ACCESS_KEY")
+bot_name = ""
 
 class PromptBot(fp.PoeBot):
     async def get_response(
@@ -32,8 +38,12 @@ class PromptBot(fp.PoeBot):
         return fp.SettingsResponse(server_bot_dependencies={"Claude-3-Haiku": 1})
 
 
-REQUIREMENTS = ["fastapi-poe==0.0.48"]
-image = Image.debian_slim().pip_install(*REQUIREMENTS)
+REQUIREMENTS = ["fastapi-poe"]
+image = (
+    Image.debian_slim()
+    .pip_install(*REQUIREMENTS)
+    .env({"POE_ACCESS_KEY": bot_access_key})
+)
 app = App("prompt-bot-poe")
 
 
@@ -41,7 +51,5 @@ app = App("prompt-bot-poe")
 @asgi_app()
 def fastapi_app():
     bot = PromptBot()
-    # see https://creator.poe.com/docs/quick-start#configuring-the-access-credentials
-    # app = fp.make_app(bot, access_key=<YOUR_ACCESS_KEY>, bot_name=<YOUR_BOT_NAME>)
-    app = fp.make_app(bot, allow_without_key=True)
+    app = fp.make_app(bot, access_key=bot_access_key, bot_name=bot_name, allow_without_key=not(bot_access_key and bot_name))
     return app
