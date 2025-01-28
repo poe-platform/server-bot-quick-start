@@ -14,17 +14,13 @@ from collections import defaultdict
 from io import BytesIO
 from typing import AsyncIterable
 
-import pdftotext
-import pytesseract
 import requests
-from docx import Document
 from fastapi_poe import PoeBot, make_app
 from fastapi_poe.types import QueryRequest, SettingsRequest, SettingsResponse
 from modal import Image, Stub, asgi_app
 from PIL import Image as PILImage
 from sse_starlette.sse import ServerSentEvent
 
-print("version", pytesseract.get_tesseract_version())
 
 SETTINGS = {
     "report_feedback": True,
@@ -40,6 +36,8 @@ url_cache = {}
 
 
 async def parse_image_document_from_url(image_url: str) -> tuple[bool, str]:
+    import pytesseract
+    print("version", pytesseract.get_tesseract_version())
     try:
         response = requests.get(image_url.strip())
         img = PILImage.open(BytesIO(response.content))
@@ -54,6 +52,7 @@ async def parse_image_document_from_url(image_url: str) -> tuple[bool, str]:
 
 
 async def parse_pdf_document_from_url(pdf_url: str) -> tuple[bool, str]:
+    import pdftotext
     try:
         response = requests.get(pdf_url)
         with BytesIO(response.content) as f:
@@ -68,6 +67,7 @@ async def parse_pdf_document_from_url(pdf_url: str) -> tuple[bool, str]:
 
 
 async def parse_pdf_document_from_docx(docx_url: str) -> tuple[bool, str]:
+    from docx import Document
     try:
         response = requests.get(docx_url)
         with BytesIO(response.content) as f:

@@ -15,9 +15,7 @@ from io import BytesIO
 from typing import AsyncIterable
 
 import fastapi_poe.client
-import pdftotext
 import requests
-from docx import Document
 from fastapi_poe import PoeBot
 from fastapi_poe.client import MetaMessage, stream_request
 from fastapi_poe.types import (
@@ -32,6 +30,7 @@ fastapi_poe.client.MAX_EVENT_COUNT = 10000
 
 
 async def parse_pdf_document_from_url(pdf_url: str) -> tuple[bool, str]:
+    import pdftotext
     try:
         response = requests.get(pdf_url)
         with BytesIO(response.content) as f:
@@ -46,6 +45,7 @@ async def parse_pdf_document_from_url(pdf_url: str) -> tuple[bool, str]:
 
 
 async def parse_pdf_document_from_docx(docx_url: str) -> tuple[bool, str]:
+    from docx import Document
     try:
         response = requests.get(docx_url)
         with BytesIO(response.content) as f:
