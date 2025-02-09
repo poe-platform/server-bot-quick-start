@@ -185,6 +185,7 @@ IMAGE_EXEC = (
         "feedparser",
         "wordcloud",
         "opencv-python",
+        "transformers",
     )
 )
 

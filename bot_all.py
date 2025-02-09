@@ -23,7 +23,7 @@ from bot_ModelRouter import ModelRouterBot
 from bot_PromotedAnswer import PromotedAnswerBot
 from bot_RunPythonCode import RunPythonCodeBot
 from bot_PythonAgent import PythonAgentBot, PythonAgentExBot, LeetCodeAgentBot
-# from bot_H1B import H1BBot
+from bot_H1B import H1BBot  # NOTE: you need to make h1b.csv to build this (h1b.csv is not in the repository)
 from bot_ToolReasoner import ToolReasonerBot
 from bot_ResumeReview import ResumeReviewBot
 from bot_TesseractOCR import TesseractOCRBot
@@ -116,7 +116,7 @@ image = (
     .copy_local_file("chinese_words.csv", "/root/chinese_words.csv")  # ChineseVocab
     .copy_local_file("japanese_kana.csv", "/root/japanese_kana.csv")  # JapaneseKana
     .copy_local_file("mmlu.csv", "/root/mmlu.csv")  # KnowledgeTest
-    # .copy_local_file("h1b.csv", "/root/h1b.csv")  # H-1B
+    .copy_local_file("h1b.csv", "/root/h1b.csv")  # H-1B  (NOTE: note included in repository)
 )
 app = App("wrapper-bot-poe")
 
@@ -141,7 +141,7 @@ def fastapi_app():
             RunPythonCodeBot(path="/RunPythonCode", access_key=POE_ACCESS_KEY),
             PythonAgentBot(path="/PythonAgent", access_key=POE_ACCESS_KEY),
             PythonAgentExBot(path="/PythonAgentEx", access_key=POE_ACCESS_KEY),
-            # H1BBot(path="/H-1B", access_key=POE_ACCESS_KEY),
+            H1BBot(path="/H-1B", access_key=POE_ACCESS_KEY),
             ToolReasonerBot(path="/ToolReasoner", access_key=POE_ACCESS_KEY),
             ResumeReviewBot(path="/ResumeReview", access_key=POE_ACCESS_KEY),
             TesseractOCRBot(path="/TesseractOCR", access_key=POE_ACCESS_KEY),
