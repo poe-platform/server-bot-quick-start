@@ -3,7 +3,7 @@
 """
 modal deploy bot_all.py
 
-modal app stop wrapper-bot-poe && modal deploy bot_all.py
+modal deploy bot_all.py && modal container list --json | jq -r '.[] | select(.["App Name"]=="wrapper-bot-poe") | .["Container ID"]' | xargs -I {} modal container stop {}
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ from bot_JapaneseKana import JapaneseKanaBot
 from bot_KnowledgeTest import KnowledgeTestBot
 from bot_ModelRouter import ModelRouterBot
 from bot_PromotedAnswer import PromotedAnswerBot
+from bot_CmdLine import CmdLineBot
 from bot_RunPythonCode import RunPythonCodeBot
 from bot_PythonAgent import PythonAgentBot, PythonAgentExBot, LeetCodeAgentBot
 from bot_H1B import H1BBot  # NOTE: you need to make h1b.csv to build this (h1b.csv is not in the repository)
@@ -28,6 +29,7 @@ from bot_ToolReasoner import ToolReasonerBot
 from bot_ResumeReview import ResumeReviewBot
 from bot_TesseractOCR import TesseractOCRBot
 from bot_tiktoken import TikTokenBot
+from bot_QwenTokenizer import QwenTokenizerBot
 from bot_TrinoAgent import TrinoAgentBot, TrinoAgentExBot
 from bot_RunTrinoQuery import RunTrinoQueryBot
 from bot_FlowchartPlotter import FlowChartPlotterBot
@@ -45,6 +47,7 @@ REQUIREMENTS = [
     "python-docx",  # ResumeReview
     "tiktoken",  # tiktoken
     "trino",  # RunTrinoQuery, TrinoAgent
+    "transformers",  # QwenTokenizer
 ]
 image = (
     Image.debian_slim()
@@ -86,6 +89,7 @@ image = (
         "wget",
         "xdg-utils",
         "curl",
+        "unzip",
     )  # mermaid requirements
     .run_commands("curl -sL https://deb.nodesource.com/setup_18.x | bash -")
     .apt_install("nodejs")
@@ -112,6 +116,8 @@ image = (
             # ideally we run all these within modal
         }
     )
+    .add_local_dir("qwen_tokenizer/", "/root/qwen_tokenizer/", copy=True)  # QwenTokenizer
+    .run_commands("unzip -o /root/qwen_tokenizer/tokenizer.json.zip -d /root/qwen_tokenizer/")  # QwenTokenizer
     .copy_local_file("chinese_sentences.txt", "/root/chinese_sentences.txt")  # ChineseStatement
     .copy_local_file("chinese_words.csv", "/root/chinese_words.csv")  # ChineseVocab
     .copy_local_file("japanese_kana.csv", "/root/japanese_kana.csv")  # JapaneseKana
@@ -138,6 +144,7 @@ def fastapi_app():
             KnowledgeTestBot(path="/KnowledgeTest", access_key=POE_ACCESS_KEY),
             ModelRouterBot(path="/ModelRouter", access_key=POE_ACCESS_KEY),
             PromotedAnswerBot(path="/PromotedAnswer", access_key=POE_ACCESS_KEY),
+            CmdLineBot(path="/CmdLine", access_key=POE_ACCESS_KEY),
             RunPythonCodeBot(path="/RunPythonCode", access_key=POE_ACCESS_KEY),
             PythonAgentBot(path="/PythonAgent", access_key=POE_ACCESS_KEY),
             PythonAgentExBot(path="/PythonAgentEx", access_key=POE_ACCESS_KEY),
@@ -146,6 +153,7 @@ def fastapi_app():
             ResumeReviewBot(path="/ResumeReview", access_key=POE_ACCESS_KEY),
             TesseractOCRBot(path="/TesseractOCR", access_key=POE_ACCESS_KEY),
             TikTokenBot(path="/tiktoken", access_key=POE_ACCESS_KEY),
+            QwenTokenizerBot(path="/QwenTokenizer", access_key=POE_ACCESS_KEY),
             TrinoAgentBot(path="/TrinoAgent", access_key=POE_ACCESS_KEY),
             TrinoAgentExBot(path="/TrinoAgentEx", access_key=POE_ACCESS_KEY),
             RunTrinoQueryBot(path="/RunTrinoQuery", access_key=POE_ACCESS_KEY),

@@ -19,11 +19,11 @@ import fastapi_poe as fp
 import modal
 from fastapi_poe import PoeBot, make_app
 from fastapi_poe.types import PartialResponse, QueryRequest
-from modal import App, Image, asgi_app
+from modal import App, Image, asgi_app, Sandbox
 
 
 def extract_codes(reply):
-    pattern = r"```(bash|sh)\n([\s\S]*?)\n```"
+    pattern = r"```(?:bash|sh)\n([\s\S]*?)\n```"
     matches = re.findall(pattern, reply)
     if matches:
         return matches
@@ -33,7 +33,7 @@ def extract_codes(reply):
 image_exec = Image.debian_slim().apt_install("curl").apt_install("git")
 
 
-class EchoBot(PoeBot):
+class CmdLineBot(PoeBot):
     async def get_response(
         self, request: QueryRequest
     ) -> AsyncIterable[PartialResponse]:
@@ -57,30 +57,28 @@ class EchoBot(PoeBot):
 
         for command in commands:
             nfs = modal.NetworkFileSystem.from_name(
-                f"vol-{request.user_id}", create_if_missing=True
+                f"vol-{hash(request.user_id)}", create_if_missing=True
             )
 
-            filename = f"{request.conversation_id}.sh"
-            with open(f"{filename}", "w") as f:
-                f.write(command)
-            os.chmod(filename, os.stat(filename).st_mode | stat.S_IEXEC)
-
-            nfs.add_local_file(
-                f"{request.conversation_id}.sh", f"{request.conversation_id}.sh"
-            )
-
-            sb = app.spawn_sandbox(
+            sb = Sandbox.create(
                 "bash",
                 "-c",
                 f"cd /cache && {command}",
-                # f"cd /cache && chmod +x {filename} && ./{filename}",
-                network_file_systems={"/cache": nfs},
                 image=image_exec,
+                network_file_systems={"/cache": nfs},
             )
             sb.wait()
 
+            print("sb.returncode", sb.returncode)
+
             output = sb.stdout.read()
             error = sb.stderr.read()
+
+            print("len(output)", len(output))
+            print("len(error)", len(error))
+            if error:  # for monitoring
+                print("error")
+                print(error)
 
             nothing_returned = True
 
@@ -96,21 +94,3 @@ class EchoBot(PoeBot):
             if nothing_returned:
                 yield PartialResponse(text="""No output or error returned.""")
 
-
-# specific to hosting with modal.com
-image = (
-    Image.debian_slim()
-    .pip_install("fastapi-poe==0.0.45")
-    .env({"POE_ACCESS_KEY": os.environ["POE_ACCESS_KEY"]})
-)
-
-app = App("poe-bot-quickstart")
-
-bot = EchoBot()
-
-
-@app.function(image=image)
-@asgi_app()
-def fastapi_app():
-    app = make_app(bot, api_key=os.environ["POE_ACCESS_KEY"])
-    return app

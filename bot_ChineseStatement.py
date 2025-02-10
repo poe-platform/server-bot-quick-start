@@ -197,7 +197,7 @@ class ChineseStatementBot(fp.PoeBot):
         request.logit_bias = {"2746": -5, "36821": -10}  # "If"  # " |\n\n"
 
         bot_reply = ""
-        async for msg in fp.stream_request(request, "ChatGPT", request.access_key):
+        async for msg in fp.stream_request(request, "Claude-3.5-Sonnet", request.access_key):
             bot_reply += msg.text
             yield msg.model_copy()
 
@@ -217,7 +217,7 @@ class ChineseStatementBot(fp.PoeBot):
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(
-            server_bot_dependencies={"ChatGPT": 1, "GPT-3.5-Turbo": 1},
+            server_bot_dependencies={"Claude-3.5-Sonnet": 1, "GPT-3.5-Turbo": 1},
             introduction_message="Say 'start' to get the sentence to translate.",
         )
 
