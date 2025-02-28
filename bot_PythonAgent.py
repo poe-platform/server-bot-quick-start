@@ -186,11 +186,15 @@ IMAGE_EXEC = (
         "wordcloud",
         "opencv-python",
         "transformers",
+        "pyflakes",
+        "astroid",
+        "jedi",
+        "pylint",
     )
 )
 
 class PythonAgentBot(PoeBot):
-    prompt_bot = "GPT-4o"
+    prompt_bot = "Claude-3.7-Sonnet"
     code_iteration_limit = 3
     logit_bias = {}  # "!["
     allow_attachments = True
@@ -391,7 +395,7 @@ class PythonAgentBot(PoeBot):
 
 
 class PythonAgentExBot(PythonAgentBot):
-    prompt_bot = "Claude-3.5-Sonnet-200k"
+    prompt_bot = "Claude-3.7-Sonnet"
     code_iteration_limit = 5
     system_prompt_role = "system"
 
