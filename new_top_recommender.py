@@ -19,6 +19,7 @@ from modal import App, Image, asgi_app
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
 
+
 class OutfitRecommenderBot(fp.PoeBot):
     async def get_response(
         self, request: fp.QueryRequest
@@ -60,15 +61,17 @@ class OutfitRecommenderBot(fp.PoeBot):
             "NOTE: The user's attached image is their current outfit."
         )
         last_message = request.query[-1]
-        last_message_with_claude_query = last_message.model_copy(update={"content": claude_request_content})
-        claude_request = request.model_copy(update={"query": [last_message_with_claude_query]})
+        last_message_with_claude_query = last_message.model_copy(
+            update={"content": claude_request_content}
+        )
+        claude_request = request.model_copy(
+            update={"query": [last_message_with_claude_query]}
+        )
 
         recommended_top = None
         recommended_top_text = ""
         async for msg in fp.stream_request(
-            claude_request,
-            "Claude-3.5-Sonnet",
-            request.access_key,
+            claude_request, "Claude-3.5-Sonnet", request.access_key
         ):
             if msg.text:
                 recommended_top_text += msg.text
@@ -91,9 +94,7 @@ class OutfitRecommenderBot(fp.PoeBot):
 
         generated_image = None
         async for msg in fp.stream_request(
-            imagen_request,
-            "Imagen3-Fast",
-            request.access_key,
+            imagen_request, "Imagen3-Fast", request.access_key
         ):
             if msg.attachment:
                 # If Imagen3-Fast responds with an attachment, pick it out
@@ -111,7 +112,9 @@ class OutfitRecommenderBot(fp.PoeBot):
             download_url=generated_image.url,
             is_inline=True,
         )
-        yield fp.PartialResponse(text=f"\n\nHere's an image of the recommended top![new_top][{attachment_response.inline_ref}]")
+        yield fp.PartialResponse(
+            text=f"\n\nHere's an image of the recommended top![new_top][{attachment_response.inline_ref}]"
+        )
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         """
@@ -120,10 +123,7 @@ class OutfitRecommenderBot(fp.PoeBot):
         """
         return fp.SettingsResponse(
             allow_attachments=True,
-            server_bot_dependencies={
-                "Claude-3.5-Sonnet": 1,
-                "Imagen3-Fast": 1,
-            }
+            server_bot_dependencies={"Claude-3.5-Sonnet": 1, "Imagen3-Fast": 1},
         )
 
 

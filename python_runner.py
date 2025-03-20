@@ -12,11 +12,13 @@ from modal import App, Image, asgi_app
 bot_access_key = os.getenv("POE_ACCESS_KEY")
 bot_name = ""
 
+
 def override_message(request: fp.QueryRequest, message: str):
     new_query = request.model_copy(
         update={"query": [fp.ProtocolMessage(role="user", content=message)]}
     )
     return new_query
+
 
 class CodeGenAndRunnerBot(fp.PoeBot):
     async def get_response(
@@ -63,7 +65,6 @@ class CodeGenAndRunnerBot(fp.PoeBot):
             yield fp.PartialResponse(text=msg.text)
         yield fp.PartialResponse(text="\n```")
 
-
         # Clean up code snippet by removing triple backticks in case Claude ignored the instructions.
         code_snippet = re.sub(r"```+", "", code_snippet).strip()
 
@@ -73,9 +74,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         yield fp.PartialResponse(text="\nRunning the code in Python...\n")
 
         python_result = await fp.get_final_response(
-            override_message(request, code_snippet),
-            "Python",
-            request.access_key,
+            override_message(request, code_snippet), "Python", request.access_key
         )
 
         # Check if Python returned an error by looking for "Traceback" or "Error" keywords
@@ -121,7 +120,9 @@ class CodeGenAndRunnerBot(fp.PoeBot):
                 request.access_key,
             )
 
-            yield fp.PartialResponse(text=f"Output of debugged code:\n{python_debug_result}")
+            yield fp.PartialResponse(
+                text=f"Output of debugged code:\n{python_debug_result}"
+            )
 
             # If we still have error, just give up and display it
             if any(kw in python_debug_result for kw in error_keywords):
@@ -162,7 +163,9 @@ class CodeGenAndRunnerBot(fp.PoeBot):
             # -------------
             # 4) If there's no error, summarize the result
             # -------------
-            yield fp.PartialResponse(text="\nThe code ran successfully on the first try.\n")
+            yield fp.PartialResponse(
+                text="\nThe code ran successfully on the first try.\n"
+            )
             yield fp.PartialResponse(
                 text="Asking Claude-3.5-Sonnet for a brief summary of the output...\n"
             )
@@ -183,7 +186,6 @@ class CodeGenAndRunnerBot(fp.PoeBot):
             ):
                 yield fp.PartialResponse(text=msg.text)
 
-
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         """
         We declare dependencies for:
@@ -191,10 +193,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         - Python (possibly: 2 or 3 calls in worst case).
         """
         return fp.SettingsResponse(
-            server_bot_dependencies={
-                "Claude-3.5-Sonnet": 3,
-                "Python": 3,
-            }
+            server_bot_dependencies={"Claude-3.5-Sonnet": 3, "Python": 3}
         )
 
 
