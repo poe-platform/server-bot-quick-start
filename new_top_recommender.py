@@ -113,7 +113,10 @@ class OutfitRecommenderBot(fp.PoeBot):
             is_inline=True,
         )
         yield fp.PartialResponse(
-            text=f"\n\nHere's an image of the recommended top![new_top][{attachment_response.inline_ref}]"
+            text=(
+                "\n\nHere's an image of the recommended top![new_top]["
+                f"{attachment_response.inline_ref}]"
+            )
         )
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:

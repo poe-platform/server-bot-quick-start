@@ -138,3 +138,23 @@ A correct implementation would look like https://poe.com/AllCapsBotDemo
   [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
 
 A correct implementation would look like https://poe.com/TurboVsClaudeBotDemo
+
+### ClothingRecommenderBot
+
+- An example bot that takes in a user-uploaded image, analyzes it with Claude-3.5-Sonnet
+  to recommend a new top, and then generates an image of the new clothing with Imagen-3
+  to return to the user.
+- This is a good starting point for handling user-uploaded attachments, and also
+  returning attachments with your bot.
+- To deploy, run `modal deploy new_top_recommender.py`
+
+A correct implementation would look like https://poe.com/TopRecommender
+
+### PythonRunnerBot
+
+- An example bot that generates code based on the user query, runs it with the @Python
+  bot, and attempts to debug it if there's any issue.
+- This is a good starting point for chaining requests to various text models.
+- To deploy, run `modal deploy python_runner.py`
+
+A correct implementation would look like https://poe.com/PythonCodeRunner
