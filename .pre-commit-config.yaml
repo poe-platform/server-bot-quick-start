@@ -1,4 +1,5 @@
 repos:
+  # Order matters because pyupgrade may make changes that pycln and black have to clean up
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.19.0
     hooks:
@@ -9,7 +10,7 @@ repos:
     rev: v2.5.0
     hooks:
       - id: pycln
-        args: ["--config=pyproject.toml"]
+        args: [--config=pyproject.toml]
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
