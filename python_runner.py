@@ -69,7 +69,8 @@ class CodeGenAndRunnerBot(fp.PoeBot):
             yield fp.PartialResponse(text=msg.text)
         yield fp.PartialResponse(text="\n```")
 
-        # Clean up code snippet by removing triple backticks in case Claude ignored the instructions.
+        # Clean up code snippet by removing triple backticks 
+        # This is incase Claude ignored the instructions.
         code_snippet = re.sub(r"```+", "", code_snippet).strip()
 
         # -------------
