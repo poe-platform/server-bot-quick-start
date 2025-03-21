@@ -42,9 +42,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         # -------------
         # 1) Ask Claude-3.5-Sonnet to generate code
         # -------------
-        yield fp.PartialResponse(
-            text="Generating code with Claude-3.5-Sonnet...\n"
-        )
+        yield fp.PartialResponse(text="Generating code with Claude-3.5-Sonnet...\n")
         # We'll give it the user's message: user_message
         # Let’s define a prompt that instructs Claude to produce Python code:
         gen_code_prompt = (
@@ -85,9 +83,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         # Check if Python returned an error by looking for "Traceback" or "Error" keywords
         error_keywords = ["Traceback (most recent call last):", "Error:"]
         has_error = any(keyword in python_result for keyword in error_keywords)
-        yield fp.PartialResponse(
-            text=f"Output of code:\n{python_result}"
-        )
+        yield fp.PartialResponse(text=f"Output of code:\n{python_result}")
 
         # -------------
         # 3) If there's an error, call Claude to help debug
