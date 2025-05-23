@@ -47,9 +47,11 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         # Let’s define a prompt that instructs Claude to produce Python code:
         gen_code_prompt = (
             "You are a helpful coding assistant. The user wants some Python code. "
-            "Please provide only the Python code (no markdown fences) needed to accomplish the following request:\n\n"
+            "Please provide only the Python code (no markdown fences) needed to "
+            "accomplish the following request:\n\n"
             f"{user_message}\n\n"
-            "Do not include any comments or other text in the code. Do not offer to explain the code."
+            "Do not include any comments or other text in the code. Do not offer to "
+            "explain the code."
         )
 
         # Wrap the code in triple backticks for nice formatting
@@ -65,7 +67,8 @@ class CodeGenAndRunnerBot(fp.PoeBot):
             yield fp.PartialResponse(text=msg.text)
         yield fp.PartialResponse(text="\n```")
 
-        # Clean up code snippet by removing triple backticks in case Claude ignored the instructions.
+        # Clean up code snippet by removing triple backticks
+        # This is incase Claude ignored the instructions.
         code_snippet = re.sub(r"```+", "", code_snippet).strip()
 
         # -------------
@@ -87,15 +90,18 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         # -------------
         if has_error:
             yield fp.PartialResponse(
-                text=f"\nWe got an error when running the code. Asking Claude-3.5-Sonnet to debug...\n"
+                text="\nWe got an error when running the code. Asking "
+                "Claude-3.5-Sonnet to debug...\n"
             )
 
             debug_prompt = (
                 "The following Python code produced an error. "
                 f"Original code:\n{code_snippet}\n\n"
                 f"Error:\n{python_result}\n\n"
-                "Please provide only the Python code (no markdown fences) needed to fix the error."
-                "Do not include any comments or other text in the code. Do not offer to explain the code."
+                "Please provide only the Python code (no markdown fences) needed to "
+                "fix the error."
+                " Do not include any comments or other text in the code. "
+                "Do not offer to explain the code."
             )
             debug_code_snippet = ""
             yield fp.PartialResponse(text="```python\n")
@@ -148,8 +154,9 @@ class CodeGenAndRunnerBot(fp.PoeBot):
                     "But we got an error. So we debugged it and ran the following code:\n"
                     f"{debug_code_snippet}\n\n"
                     "The output of the code was:\n"
-                    f"{python_debug_result}"
-                    "Please summarize the output of the code, and whether it fulfilled the original request."
+                    f"{python_debug_result}\n\n"
+                    "Please summarize the output of the code, and whether it fulfilled the "
+                    "original request."
                 )
 
                 async for msg in fp.stream_request(
@@ -175,8 +182,9 @@ class CodeGenAndRunnerBot(fp.PoeBot):
                 "The code that was generated and run was:\n"
                 f"{code_snippet}\n\n"
                 "The output of the code was:\n"
-                f"{python_result}"
-                "Please summarize the output of the code, and whether it fulfilled the original request."
+                f"{python_result}\n\n"
+                "Please summarize the output of the code, and whether it fulfilled the "
+                "original request."
             )
 
             async for msg in fp.stream_request(
