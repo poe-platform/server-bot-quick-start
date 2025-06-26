@@ -75,6 +75,7 @@ def extract_code(reply):
 IMAGE_EXEC = (
     Image
     .debian_slim()
+    .apt_install("curl", "git", "ripgrep")
     .pip_install(
         "ipython",
         "scipy",

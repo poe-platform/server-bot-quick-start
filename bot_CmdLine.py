@@ -18,7 +18,7 @@ from typing import AsyncIterable
 import fastapi_poe as fp
 import modal
 from fastapi_poe import PoeBot, make_app
-from fastapi_poe.types import PartialResponse, QueryRequest
+from fastapi_poe.types import PartialResponse, QueryRequest, SettingsResponse, SettingsRequest
 from modal import App, Image, asgi_app, Sandbox
 
 
@@ -30,8 +30,17 @@ def extract_codes(reply):
     return []
 
 
-image_exec = Image.debian_slim().apt_install("curl").apt_install("git")
+image_exec = Image.debian_slim().apt_install("curl", "git", "ripgrep")
 
+INTRODUCTION_MESSAGE = """This bot will execute bash commands.
+
+````
+```bash
+pwd
+```
+````
+
+Try copying the above, paste it, and reply."""
 
 class CmdLineBot(PoeBot):
     async def get_response(
@@ -94,3 +103,9 @@ class CmdLineBot(PoeBot):
             if nothing_returned:
                 yield PartialResponse(text="""No output or error returned.""")
 
+    async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
+        return SettingsResponse(
+            server_bot_dependencies={},
+            allow_attachments=False,  # to update when ready
+            introduction_message=INTRODUCTION_MESSAGE,
+        )
