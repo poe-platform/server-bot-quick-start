@@ -67,13 +67,13 @@ modal token new --source poe
 
 *What happens: Opens your browser to connect your terminal to Modal with your GitHub account*
 
-### Deploy Your Bot
+### Test Your Bot
 From the `server-bot-quick-start` directory, run:
 ```bash
 modal serve my_bot.py
 ```
 
-*What this does: Runs your bot temporarily for testing. Look for a URL like:*
+*What this does: Runs your bot temporarily for testing (your terminal must stay open). Look for a URL like:*
 ```
 https://yourname--my-bot-fastapi-app-dev.modal.run
 ```
@@ -203,25 +203,6 @@ elif len(user_message.split()) > 10:
 
 **URL stopped working**: Redeploy and update the Server URL in Poe settings
 
----
-
-## Next Steps
-
-Once your basic bot works:
-
-1. **Add unique features** that make your bot special
-2. **Handle edge cases** (what if users say unexpected things?)
-3. **Test thoroughly** with friends before sharing widely
-4. **Iterate based on feedback** from real users
-
-### Advanced Features to Explore
-- File upload processing
-- Calling other Poe bots from your bot
-- Database integration
-- Complex conversation flows
-- API integrations
-
----
 
 ## Resources
 - [Poe Documentation](https://creator.poe.com/docs)
