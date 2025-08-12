@@ -3,13 +3,14 @@ Weather Bot for Poe - Provides weather information using OpenWeather API
 """
 
 from __future__ import annotations
+
 import os
-import asyncio
 from typing import AsyncIterable
 
 import fastapi_poe as fp
 from fastapi_poe.types import QueryRequest, SettingsRequest, SettingsResponse
-from modal import Image, App, asgi_app, Secret
+from modal import App, Image, Secret, asgi_app
+
 
 # ----------------------------------------
 # Helper function to safely get API key
@@ -24,6 +25,7 @@ def get_openweather_api_key() -> str:
         )
     return api_key
 
+
 OPENWEATHER_BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
 
 
@@ -36,7 +38,7 @@ class WeatherBot(fp.PoeBot):
         if not self._is_weather_request(user_message):
             yield fp.PartialResponse(
                 text="Hi! I'm a weather bot. Ask me about the weather in any city! "
-                     "For example: 'What's the weather in New York?' or 'Weather in London'"
+                "For example: 'What's the weather in New York?' or 'Weather in London'"
             )
             return
 
@@ -45,7 +47,7 @@ class WeatherBot(fp.PoeBot):
         if not city_name:
             yield fp.PartialResponse(
                 text="I couldn't find a city name in your message. "
-                     "Please ask like: 'What's the weather in [city name]?'"
+                "Please ask like: 'What's the weather in [city name]?'"
             )
             return
 
@@ -56,20 +58,29 @@ class WeatherBot(fp.PoeBot):
         except Exception:
             yield fp.PartialResponse(
                 text=f"Sorry, I couldn't get weather information for '{city_name}'. "
-                     f"Please check the city name and try again."
+                f"Please check the city name and try again."
             )
 
     def _is_weather_request(self, message: str) -> bool:
         weather_keywords = [
-            'weather', 'temperature', 'temp', 'forecast', 'climate',
-            'hot', 'cold', 'rain', 'sunny', 'cloudy', 'humidity'
+            "weather",
+            "temperature",
+            "temp",
+            "forecast",
+            "climate",
+            "hot",
+            "cold",
+            "rain",
+            "sunny",
+            "cloudy",
+            "humidity",
         ]
         message_lower = message.lower()
         return any(keyword in message_lower for keyword in weather_keywords)
 
     def _extract_city_name(self, message: str) -> str:
         message_lower = message.lower()
-        patterns = [' in ', ' for ', ' at ', ' of ']
+        patterns = [" in ", " for ", " at ", " of "]
         city_name = ""
 
         for pattern in patterns:
@@ -77,15 +88,23 @@ class WeatherBot(fp.PoeBot):
                 parts = message_lower.split(pattern)
                 if len(parts) > 1:
                     city_part = parts[1].strip()
-                    city_part = city_part.replace('?', '').replace('.', '').replace('!', '')
+                    city_part = (
+                        city_part.replace("?", "").replace(".", "").replace("!", "")
+                    )
                     city_words = city_part.split()[:3]
-                    city_name = ' '.join(city_words).strip()
+                    city_name = " ".join(city_words).strip()
                     break
 
         if not city_name:
             words = message.split()
             if len(words) >= 2:
-                city_name = ' '.join(words[-2:]).replace('?', '').replace('.', '').replace('!', '').strip()
+                city_name = (
+                    " ".join(words[-2:])
+                    .replace("?", "")
+                    .replace(".", "")
+                    .replace("!", "")
+                    .strip()
+                )
 
         return city_name.title()
 
@@ -93,25 +112,25 @@ class WeatherBot(fp.PoeBot):
         return get_weather_api_data(city_name, get_openweather_api_key())
 
     def _format_weather_response(self, weather_data: dict) -> str:
-        city = weather_data['name']
-        country = weather_data['sys']['country']
+        city = weather_data["name"]
+        country = weather_data["sys"]["country"]
 
-        main = weather_data['main']
-        weather = weather_data['weather'][0]
-        wind = weather_data.get('wind', {})
+        main = weather_data["main"]
+        weather = weather_data["weather"][0]
+        wind = weather_data.get("wind", {})
 
-        temp = round(main['temp'])
-        feels_like = round(main['feels_like'])
-        temp_min = round(main['temp_min'])
-        temp_max = round(main['temp_max'])
+        temp = round(main["temp"])
+        feels_like = round(main["feels_like"])
+        temp_min = round(main["temp_min"])
+        temp_max = round(main["temp_max"])
 
         temp_f = round(temp * 9 / 5 + 32)
         feels_like_f = round(feels_like * 9 / 5 + 32)
 
-        description = weather['description'].title()
-        humidity = main['humidity']
-        pressure = main['pressure']
-        wind_speed = wind.get('speed', 0)
+        description = weather["description"].title()
+        humidity = main["humidity"]
+        pressure = main["pressure"]
+        wind_speed = wind.get("speed", 0)
 
         response = f"""🌤️ **Weather in {city}, {country}**
 
@@ -129,9 +148,7 @@ class WeatherBot(fp.PoeBot):
         return response
 
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
-        return SettingsResponse(
-            server_bot_dependencies={"requests": "2.31.0"}
-        )
+        return SettingsResponse(server_bot_dependencies={"requests": "2.31.0"})
 
 
 # Modal deployment setup
@@ -142,11 +159,7 @@ app = App("weatherbot")
 def get_weather_api_data(city_name: str, api_key: str) -> dict:
     import requests
 
-    params = {
-        'q': city_name,
-        'appid': api_key,
-        'units': 'metric'
-    }
+    params = {"q": city_name, "appid": api_key, "units": "metric"}
 
     response = requests.get(OPENWEATHER_BASE_URL, params=params)
 
@@ -160,10 +173,7 @@ def get_weather_api_data(city_name: str, api_key: str) -> dict:
     return response.json()
 
 
-@app.function(
-    image=image,
-    secrets=[Secret.from_name("OPENWEATHER_API_KEY")]
-)
+@app.function(image=image, secrets=[Secret.from_name("OPENWEATHER_API_KEY")])
 @asgi_app()
 def fastapi_app():
     bot = WeatherBot()

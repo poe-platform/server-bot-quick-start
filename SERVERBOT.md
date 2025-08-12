@@ -1,44 +1,56 @@
 # How to Create Your Own Poe Server Bot
-*A step-by-step guide*
+
+_A step-by-step guide_
 
 ## What You're Building
-You'll create a **server bot** - a custom AI chatbot that runs your own code and can do things regular Poe bots can't, like remember conversations, connect to websites, or process data in unique ways.
+
+You'll create a **server bot** - a custom AI chatbot that runs your own code and can do
+things regular Poe bots can't, like remember conversations, connect to websites, or
+process data in unique ways.
 
 **Server Bot vs Regular Bot:**
+
 - **Regular Bot**: Just a prompt that Poe runs
 - **Server Bot**: Your own code running on a server that Poe connects to
 
-**Why Modal?** Modal runs your Python code in the cloud 24/7, so your bot works without keeping your computer on.
+**Why Modal?** Modal runs your Python code in the cloud 24/7, so your bot works without
+keeping your computer on.
 
 ---
 
 ## Step 1: Project Setup
 
 ### Get the Template Code
+
 In your terminal, run these commands:
+
 ```bash
 git clone https://github.com/poe-platform/server-bot-quick-start
 cd server-bot-quick-start
 pip3 install -r requirements.txt
 ```
 
-*What this does: Downloads example bot code and installs the tools you need*
+_What this does: Downloads example bot code and installs the tools you need_
 
 ### Choose Your Starting Point
+
 The folder contains several example bots. For your custom bot, you can either:
+
 - **Start simple**: Modify `echobot.py` (just repeats what users say)
 - **Start advanced**: Copy one of the other examples that's closer to what you want
 
 ### Create Your Custom Bot
+
 1. **Copy an example**: `cp echobot.py my_bot.py`
 2. **Open in your editor**: Open `my_bot.py` in VS Code, Sublime, or any text editor
 3. **Customize the logic**: Find the `get_response` method and change what your bot does
 
 **Basic customization example:**
+
 ```python
 async def get_response(self, query: QueryRequest) -> AsyncIterable[fp.PartialResponse]:
     user_message = query.query[-1].content
-    
+
     # Replace this echo logic with YOUR bot's logic
     if "hello" in user_message.lower():
         response = "Hi there! I'm your custom bot."
@@ -46,7 +58,7 @@ async def get_response(self, query: QueryRequest) -> AsyncIterable[fp.PartialRes
         response = "I can help with [YOUR BOT'S SPECIFIC FEATURES]"
     else:
         response = f"Interesting! You said: {user_message}"
-    
+
     yield fp.PartialResponse(text=response)
 ```
 
@@ -55,25 +67,33 @@ async def get_response(self, query: QueryRequest) -> AsyncIterable[fp.PartialRes
 ## Step 2: Deploying Your Bot
 
 ### Install Modal
+
 ```bash
 pip3 install modal
 ```
 
 ### Setup Modal Access
+
 Run this command (you only do this once):
+
 ```bash
 modal token new --source poe
 ```
 
-*What happens: Opens your browser to connect your terminal to Modal with your GitHub account*
+_What happens: Opens your browser to connect your terminal to Modal with your GitHub
+account_
 
 ### Test Your Bot
+
 From the `server-bot-quick-start` directory, run:
+
 ```bash
 modal serve my_bot.py
 ```
 
-*What this does: Runs your bot temporarily for testing (your terminal must stay open). Look for a URL like:*
+_What this does: Runs your bot temporarily for testing (your terminal must stay open).
+Look for a URL like:_
+
 ```
 https://yourname--my-bot-fastapi-app-dev.modal.run
 ```
@@ -85,6 +105,7 @@ https://yourname--my-bot-fastapi-app-dev.modal.run
 ## Step 3: Connect to Poe
 
 ### Create Your Poe Bot
+
 1. Go to [poe.com/create_bot](https://poe.com/create_bot)
 2. Select **"Server bot"**
 3. Fill out the form:
@@ -96,6 +117,7 @@ https://yourname--my-bot-fastapi-app-dev.modal.run
 **Important:** Copy down the **Bot Name** and **Access Key** that appear!
 
 ### Configure Your Credentials
+
 1. Open your `my_bot.py` file
 2. Find this line near the bottom:
    ```python
@@ -108,9 +130,10 @@ https://yourname--my-bot-fastapi-app-dev.modal.run
 4. Replace with your actual values from Poe
 5. Save the file
 
-*What this does: Securely connects your code to your Poe bot*
+_What this does: Securely connects your code to your Poe bot_
 
 ### Test Your Bot
+
 Modal automatically updates when you save. Go to Poe and try talking to your bot!
 
 ---
@@ -120,13 +143,15 @@ Modal automatically updates when you save. Go to Poe and try talking to your bot
 When your bot is working correctly:
 
 ### Deploy for Production
+
 ```bash
 modal deploy my_bot.py
 ```
 
-*What this does: Makes your bot run 24/7 instead of just while testing*
+_What this does: Makes your bot run 24/7 instead of just while testing_
 
 ### Update Your Poe Bot
+
 1. Copy the new permanent URL (won't have `-dev` in it)
 2. Go to your Poe bot settings
 3. Update the **Server URL** with the permanent URL
@@ -137,6 +162,7 @@ modal deploy my_bot.py
 ## Customizing Your Bot
 
 ### Add Conversation Memory
+
 ```python
 class MyBot(fp.PoeBot):
     def __init__(self):
@@ -145,33 +171,39 @@ class MyBot(fp.PoeBot):
 ```
 
 ### Connect to Free APIs
+
 Add real-world data to make your bot more useful:
 
 **Weather APIs:**
+
 - OpenWeatherMap (free tier): Current weather for any city
 - WeatherAPI: Weather forecasts and conditions
 
 **Location & Maps:**
+
 - Nominatim (OpenStreetMap): Convert addresses to coordinates
 - REST Countries: Country information and data
 
 **Transportation:**
+
 - OpenTripPlanner: Public transit directions
 - Overpass API: Real-time map data
 
 **Useful Data:**
+
 - JSONPlaceholder: Fake data for testing
-- REST Countries: Country facts and statistics  
+- REST Countries: Country facts and statistics
 - Dog CEO API: Random dog pictures
 - JokeAPI: Programming and general jokes
 
 **Example API call in your bot:**
+
 ```python
 import httpx  # Add this import at the top
 
 async def get_response(self, query: QueryRequest) -> AsyncIterable[fp.PartialResponse]:
     user_message = query.query[-1].content
-    
+
     if "dog" in user_message.lower():
         async with httpx.AsyncClient() as client:
             response = await client.get("https://dog.ceo/api/breeds/image/random")
@@ -181,6 +213,7 @@ async def get_response(self, query: QueryRequest) -> AsyncIterable[fp.PartialRes
 ```
 
 ### Smart Responses
+
 ```python
 # Check for multiple conditions
 if "math" in user_message and any(op in user_message for op in ["+", "-", "*", "/"]):
@@ -203,8 +236,8 @@ elif len(user_message.split()) > 10:
 
 **URL stopped working**: Redeploy and update the Server URL in Poe settings
 
-
 ## Resources
+
 - [Poe Documentation](https://creator.poe.com/docs)
 - [Modal Documentation](https://modal.com/docs)
 - [fastapi-poe Library](https://pypi.org/project/fastapi-poe/)
