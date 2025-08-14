@@ -102,6 +102,17 @@ A correct implementation would look like https://poe.com/PDFCounterBotDemo
 
 A correct implementation would look like https://poe.com/FunctionCallingDemo
 
+### FunctionCallingLoopBot
+
+- A bot that manages a function calling loop and preserves function (tool) details in
+  the chat for later user queries.
+- To deploy, run `modal deploy function_calling_loop_bot.py`
+- Before you are able to use the bot, you also need to synchronize the bot's settings
+  with the Poe Platform, the instructions for which are specified
+  [here](https://creator.poe.com/docs/server-bots-functional-guides#updating-bot-settings).
+
+A correct implementation would look like https://poe.com/FunctionCallingLoopDemo
+
 ### LogBot
 
 - Illustrate what is contained in the QueryRequest object.
