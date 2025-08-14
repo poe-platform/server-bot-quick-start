@@ -18,7 +18,10 @@ MAX_BOT_CALLS = 10
 # Define a list of callable tools for the model
 def get_weather(latitude: float, longitude: float) -> float:
     response = requests.get(
-        f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m"
+        "https://api.open-meteo.com/v1/forecast?"
+        f"latitude={latitude}&longitude={longitude}"
+        "&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,"
+        "relative_humidity_2m,wind_speed_10m"
     )
     data = response.json()
     return data["current"]["temperature_2m"]
@@ -99,7 +102,8 @@ class FunctionCallingLoopBot(fp.PoeBot):
                 tools=None if force_final_response else tool_definitions,
             ):
                 # 2. [First iteration] Receive a tool call from the model
-                # 5. [Subsequent iterations] Receive a final response from the model (or more tool calls)
+                # 5. [Subsequent iterations] Receive a final response from the model (or more 
+                # tool calls)
                 if msg.tool_calls:
                     for tool_call in msg.tool_calls:
                         if tool_call.index not in tool_calls:
