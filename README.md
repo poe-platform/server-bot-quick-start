@@ -104,7 +104,8 @@ A correct implementation would look like https://poe.com/FunctionCallingDemo
 
 ### FunctionCallingLoopBot
 
-- A bot that manages a function calling loop and preserves function (tool) details in the chat for later user queries.
+- A bot that manages a function calling loop and preserves function (tool) details in
+  the chat for later user queries.
 - To deploy, run `modal deploy function_calling_loop_bot.py`
 - Before you are able to use the bot, you also need to synchronize the bot's settings
   with the Poe Platform, the instructions for which are specified

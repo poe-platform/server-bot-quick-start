@@ -14,11 +14,15 @@ bot_name = ""
 TOOL_CALL_BOT = "GPT-4o"
 MAX_BOT_CALLS = 10
 
+
 # Define a list of callable tools for the model
 def get_weather(latitude: float, longitude: float) -> float:
-    response = requests.get(f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m")
+    response = requests.get(
+        f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m"
+    )
     data = response.json()
-    return data['current']['temperature_2m']
+    return data["current"]["temperature_2m"]
+
 
 tools_dicts = [
     {
@@ -30,18 +34,16 @@ tools_dicts = [
                 "type": "object",
                 "properties": {
                     "latitude": {"type": "number"},
-                    "longitude": {"type": "number"}
+                    "longitude": {"type": "number"},
                 },
                 "required": ["latitude", "longitude"],
-                "additionalProperties": False
+                "additionalProperties": False,
             },
-            "strict": True
-        }
-    },
+            "strict": True,
+        },
+    }
 ]
-tool_executables_map = {
-    "get_weather": get_weather,
-}
+tool_executables_map = {"get_weather": get_weather}
 tool_definitions = [fp.ToolDefinition(**tools_dict) for tools_dict in tools_dicts]
 
 
@@ -53,10 +55,7 @@ def get_tool_call_result(tool_call: fp.ToolCallDefinition) -> fp.ToolResultDefin
 
     result = tool_function(**tool_args)
     return fp.ToolResultDefinition(
-        role="tool",
-        name=tool_name,
-        tool_call_id=tool_call.id,
-        content=str(result),
+        role="tool", name=tool_name, tool_call_id=tool_call.id, content=str(result)
     )
 
 
@@ -69,11 +68,15 @@ class FunctionCallingLoopBot(fp.PoeBot):
         for msg in request.query:
             if msg.metadata is not None:
                 metadata_message_dicts = json.loads(msg.metadata)
-                chat_context_with_metadata_expanded.extend([
-                    fp.ProtocolMessage.model_validate(metadata_message_dict) 
-                    for metadata_message_dict in metadata_message_dicts
-                ])
-            chat_context_with_metadata_expanded.append(msg.model_copy(update={"metadata": None}))
+                chat_context_with_metadata_expanded.extend(
+                    [
+                        fp.ProtocolMessage.model_validate(metadata_message_dict)
+                        for metadata_message_dict in metadata_message_dicts
+                    ]
+                )
+            chat_context_with_metadata_expanded.append(
+                msg.model_copy(update={"metadata": None})
+            )
         request.query = chat_context_with_metadata_expanded
         tool_messages: list[fp.ProtocolMessage] = []
 
@@ -90,9 +93,9 @@ class FunctionCallingLoopBot(fp.PoeBot):
             # 1. [First iteration] Make a request to the model with tools it could call
             # 4. [Subsequent iterations] Make another request to the model with the tool output
             async for msg in fp.stream_request(
-                request, 
-                TOOL_CALL_BOT, 
-                request.access_key, 
+                request,
+                TOOL_CALL_BOT,
+                request.access_key,
                 tools=None if force_final_response else tool_definitions,
             ):
                 # 2. [First iteration] Receive a tool call from the model
@@ -106,7 +109,7 @@ class FunctionCallingLoopBot(fp.PoeBot):
                                 tool_call.index
                             ].function.arguments += tool_call.function.arguments
                     continue_tool_loop = True
-                    
+
                 else:
                     yield msg
 
@@ -127,7 +130,7 @@ class FunctionCallingLoopBot(fp.PoeBot):
                 )
                 request.query.append(tool_call_message)
                 tool_messages.append(tool_call_message)
-                
+
                 tool_result_message = fp.ProtocolMessage(
                     role="tool",
                     content=json.dumps(
@@ -136,16 +139,17 @@ class FunctionCallingLoopBot(fp.PoeBot):
                 )
                 request.query.append(tool_result_message)
                 tool_messages.append(tool_result_message)
-            
+
         # Store the tool messages for later calls to this server bot
         yield fp.DataResponse(
-            metadata=json.dumps([tool_message.model_dump() for tool_message in tool_messages])
+            metadata=json.dumps(
+                [tool_message.model_dump() for tool_message in tool_messages]
+            )
         )
-            
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(
-            server_bot_dependencies={TOOL_CALL_BOT: MAX_BOT_CALLS},
+            server_bot_dependencies={TOOL_CALL_BOT: MAX_BOT_CALLS}
         )
 
 
