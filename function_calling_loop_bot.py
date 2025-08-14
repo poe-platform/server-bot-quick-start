@@ -102,7 +102,7 @@ class FunctionCallingLoopBot(fp.PoeBot):
                 tools=None if force_final_response else tool_definitions,
             ):
                 # 2. [First iteration] Receive a tool call from the model
-                # 5. [Subsequent iterations] Receive a final response from the model (or more 
+                # 5. [Subsequent iterations] Receive a final response from the model (or more
                 # tool calls)
                 if msg.tool_calls:
                     for tool_call in msg.tool_calls:
