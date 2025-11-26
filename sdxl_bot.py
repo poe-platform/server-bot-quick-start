@@ -43,7 +43,7 @@ FIREWORKS_SDXL_ENDPOINT = (
 
 class SDXLBot(PoeBot):
     async def get_settings(self, setting: SettingsRequest) -> SettingsResponse:
-        return SettingsResponse(enable_multi_bot_chat_prompting=True)
+        return SettingsResponse(enable_multi_entity_prompting=True)
 
     async def _generate_image_async(
         self, prompt: str, aspect_ratio: Optional[str] = ASPECT_RATIO
