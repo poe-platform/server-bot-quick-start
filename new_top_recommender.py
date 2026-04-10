@@ -1,8 +1,8 @@
 """
 Example PoeBot that:
 1) Takes a user-uploaded image (ideally a full-body photo of a person).
-2) Asks Claude-3.5-Sonnet to recommend a new top (e.g., shirt or jacket).
-3) Asks Imagen3-Fast to generate an image of that new top.
+2) Asks Claude-Sonnet-4.6 to recommend a new top (e.g., shirt or jacket).
+3) Asks Imagen-4 to generate an image of that new top.
 5) Returns the final recommended image.
 """
 
@@ -26,8 +26,8 @@ class OutfitRecommenderBot(fp.PoeBot):
     ) -> AsyncIterable[fp.PartialResponse]:
         """
         1) Find the *latest* user image if present.
-        2) Call Claude-3.5-Sonnet: "Analyze the person's outfit & recommend a new top."
-        3) Take Claude's recommended top text & call Imagen3-Fast to generate an image of that top.
+        2) Call Claude-Sonnet-4.6: "Analyze the person's outfit & recommend a new top."
+        3) Take Claude's recommended top text & call Imagen-4 to generate an image of that top.
         5) Return the generated image of recommended top to user.
         """
 
@@ -50,7 +50,7 @@ class OutfitRecommenderBot(fp.PoeBot):
             )
             return
 
-        # 2) Ask Claude-3.5-Sonnet to analyze the photo and recommend a top
+        # 2) Ask Claude-Sonnet-4.6 to analyze the photo and recommend a top
         # We'll craft a custom message for Claude including a reference to the user image
         # We do so by copying the original request but overriding the final user message content
         claude_request_content = (
@@ -71,7 +71,7 @@ class OutfitRecommenderBot(fp.PoeBot):
         recommended_top = None
         recommended_top_text = ""
         async for msg in fp.stream_request(
-            claude_request, "Claude-3.5-Sonnet", request.access_key
+            claude_request, "Claude-Sonnet-4.6", request.access_key
         ):
             if msg.text:
                 recommended_top_text += msg.text
@@ -84,7 +84,7 @@ class OutfitRecommenderBot(fp.PoeBot):
             )
             return
 
-        # 3) Ask Imagen3-Fast to generate an image of the recommended top
+        # 3) Ask Imagen-4 to generate an image of the recommended top
         imagen_request = request.model_copy(deep=True)
         imagen_request.query[-1].content = (
             f"Please create an image of a {recommended_top} only. White background."
@@ -94,15 +94,15 @@ class OutfitRecommenderBot(fp.PoeBot):
 
         generated_image = None
         async for msg in fp.stream_request(
-            imagen_request, "Imagen3-Fast", request.access_key
+            imagen_request, "Imagen-4", request.access_key
         ):
             if msg.attachment:
-                # If Imagen3-Fast responds with an attachment, pick it out
+                # If Imagen-4 responds with an attachment, pick it out
                 generated_image = msg.attachment
 
         if not generated_image:
             yield fp.ErrorResponse(
-                text="The Imagen3-Fast bot did not return an image of the top."
+                text="The Imagen-4 bot did not return an image of the top."
             )
             return
 
@@ -122,11 +122,11 @@ class OutfitRecommenderBot(fp.PoeBot):
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         """
         - We turn on attachments so we can receive the user's image.
-        - We also want to call 2 other bots (Claude-3.5-Sonnet, Imagen3-Fast).
+        - We also want to call 2 other bots (Claude-Sonnet-4.6, Imagen-4).
         """
         return fp.SettingsResponse(
             allow_attachments=True,
-            server_bot_dependencies={"Claude-3.5-Sonnet": 1, "Imagen3-Fast": 1},
+            server_bot_dependencies={"Claude-Sonnet-4.6": 1, "Imagen-4": 1},
         )
 
 

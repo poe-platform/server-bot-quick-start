@@ -1,6 +1,6 @@
 """
 
-Sample bot that returns interleaved results from GPT-3.5-Turbo and Claude-instant.
+Sample bot that returns interleaved results from GPT-3.5-Turbo and Claude-Haiku-4.5.
 
 """
 
@@ -119,14 +119,14 @@ class GPT35TurbovsClaudeBot(fp.PoeBot):
     ) -> AsyncIterable[fp.PartialResponse]:
         streams = [
             stream_request_wrapper(request, bot)
-            for bot in ("GPT-3.5-Turbo", "Claude-3.5-Haiku")
+            for bot in ("GPT-3.5-Turbo", "Claude-Haiku-4.5")
         ]
         async for msg in combine_streams(*streams):
             yield msg
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(
-            server_bot_dependencies={"GPT-3.5-Turbo": 1, "Claude-3.5-Haiku": 1}
+            server_bot_dependencies={"GPT-3.5-Turbo": 1, "Claude-Haiku-4.5": 1}
         )
 
 

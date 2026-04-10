@@ -25,9 +25,9 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         self, request: fp.QueryRequest
     ) -> AsyncIterable[fp.PartialResponse]:
         """
-        1. Call Claude-3.5-Sonnet to generate code based on the user's request.
+        1. Call Claude-Sonnet-4.6 to generate code based on the user's request.
         2. Pass the returned code to the Python bot.
-        3. If there's an error, call Claude-3.5-Sonnet again with the error message for debugging.
+        3. If there's an error, call Claude-Sonnet-4.6 again with the error message for debugging.
         4. Re-run the updated code on the Python bot.
         5. Return the final result (or last error if debugging failed).
         """
@@ -40,9 +40,9 @@ class CodeGenAndRunnerBot(fp.PoeBot):
             return
 
         # -------------
-        # 1) Ask Claude-3.5-Sonnet to generate code
+        # 1) Ask Claude-Sonnet-4.6 to generate code
         # -------------
-        yield fp.PartialResponse(text="Generating code with Claude-3.5-Sonnet...\n")
+        yield fp.PartialResponse(text="Generating code with Claude-Sonnet-4.6...\n")
         # We'll give it the user's message: user_message
         # Let’s define a prompt that instructs Claude to produce Python code:
         gen_code_prompt = (
@@ -59,7 +59,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         code_snippet = ""
         async for msg in fp.stream_request(
             override_message(request, gen_code_prompt),
-            "Claude-3.5-Sonnet",
+            "Claude-Sonnet-4.6",
             request.access_key,
         ):
             if msg.text:
@@ -91,7 +91,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
         if has_error:
             yield fp.PartialResponse(
                 text="\nWe got an error when running the code. Asking "
-                "Claude-3.5-Sonnet to debug...\n"
+                "Claude-Sonnet-4.6 to debug...\n"
             )
 
             debug_prompt = (
@@ -107,7 +107,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
             yield fp.PartialResponse(text="```python\n")
             async for msg in fp.stream_request(
                 override_message(request, debug_prompt),
-                "Claude-3.5-Sonnet",
+                "Claude-Sonnet-4.6",
                 request.access_key,
             ):
                 if msg.text:
@@ -145,7 +145,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
                 yield fp.PartialResponse(
                     text="\nDebugged code ran successfully. Summarizing the final output...\n"
                 )
-                # We'll make a request to Claude-3.5-Sonnet to summarize the result:
+                # We'll make a request to Claude-Sonnet-4.6 to summarize the result:
                 summary_prompt = (
                     "The original user request was:\n"
                     f"{user_message}\n\n"
@@ -161,7 +161,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
 
                 async for msg in fp.stream_request(
                     override_message(request, summary_prompt),
-                    "Claude-3.5-Sonnet",
+                    "Claude-Sonnet-4.6",
                     request.access_key,
                 ):
                     yield fp.PartialResponse(text=msg.text)
@@ -174,7 +174,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
                 text="\nThe code ran successfully on the first try.\n"
             )
             yield fp.PartialResponse(
-                text="Asking Claude-3.5-Sonnet for a brief summary of the output...\n"
+                text="Asking Claude-Sonnet-4.6 for a brief summary of the output...\n"
             )
             summary_prompt = (
                 "The original user request was:\n"
@@ -189,7 +189,7 @@ class CodeGenAndRunnerBot(fp.PoeBot):
 
             async for msg in fp.stream_request(
                 override_message(request, summary_prompt),
-                "Claude-3.5-Sonnet",
+                "Claude-Sonnet-4.6",
                 request.access_key,
             ):
                 yield fp.PartialResponse(text=msg.text)
@@ -197,11 +197,11 @@ class CodeGenAndRunnerBot(fp.PoeBot):
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         """
         We declare dependencies for:
-        - Claude-3.5-Sonnet (possibly: 3 calls in worst case).
+        - Claude-Sonnet-4.6 (possibly: 3 calls in worst case).
         - Python (possibly: 2 or 3 calls in worst case).
         """
         return fp.SettingsResponse(
-            server_bot_dependencies={"Claude-3.5-Sonnet": 3, "Python": 3}
+            server_bot_dependencies={"Claude-Sonnet-4.6": 3, "Python": 3}
         )
 
 

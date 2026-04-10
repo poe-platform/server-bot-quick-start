@@ -152,8 +152,8 @@ A correct implementation would look like https://poe.com/TurboVsClaudeBotDemo
 
 ### ClothingRecommenderBot
 
-- An example bot that takes in a user-uploaded image, analyzes it with Claude-3.5-Sonnet
-  to recommend a new top, and then generates an image of the new clothing with Imagen-3
+- An example bot that takes in a user-uploaded image, analyzes it with Claude-Sonnet-4.6
+  to recommend a new top, and then generates an image of the new clothing with Imagen-4
   to return to the user.
 - This is a good starting point for handling user-uploaded attachments, and also
   returning attachments with your bot.
